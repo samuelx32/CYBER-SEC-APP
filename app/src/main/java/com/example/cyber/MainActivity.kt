@@ -14,7 +14,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
-import kotlinx.coroutines.launch
 import com.example.cyber.ui.theme.CyberTheme
 
 
@@ -39,29 +38,35 @@ fun AppWithDrawer(navController: NavHostController) {
 
         }
     ) {
-        AppNavHost(navController = navController, onMenuClick = {
-            scope.launch { drawerState.open() }
-        })
+
+        AppNavHost(navController = navController)
     }
 }
 
 
 @Composable
-fun AppNavHost(navController: NavHostController, onMenuClick: () -> Unit, modifier: Modifier = Modifier) {
-    NavHost(navController = navController, startDestination = "home", modifier = modifier) {
-        composable("home") {
+fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
+    NavHost(
+        navController = navController,
+        startDestination = "home",
+        modifier = modifier
+    ) {
+        composable(route = "home") {
             TelaInicial(navigateTo = { route ->
-                navController.navigate(route)  // Navega para a rota especificada
-            }, onMenuClick = onMenuClick)
+                navController.navigate(route)
+            })
         }
-        composable("gerarSenha") {
-            GeracaoDeSenhas()
+
+        composable(route = "gerarSenha") {
+            GeradorDeSenhas(navController = navController)
         }
-        composable("login") {  // Certifique-se de que a rota é "login"
-            LoginScreen(navController = navController)  // Passa o NavController para a tela de login
+
+        composable(route = "login") {
+            LoginScreen(navController = navController)
         }
     }
 }
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
