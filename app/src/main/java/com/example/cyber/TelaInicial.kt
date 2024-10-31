@@ -1,4 +1,5 @@
 package com.example.cyber
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,10 +16,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-
-
 @Composable
-fun TelaInicial(navigateTo: (String) -> Unit, onMenuClick: () -> Unit) {
+fun TelaInicial(navigateTo: (String) -> Unit) {
+    var menuExpanded by remember { mutableStateOf(false) }
+    var verificationExpanded by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -27,36 +29,156 @@ fun TelaInicial(navigateTo: (String) -> Unit, onMenuClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Espaço para o ícone do menu e perfil
+        // Header com ícone do menu e perfil
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Ícone do menu (hambúrguer)
+            // Ícone do menu suspenso
             Image(
-                painter = painterResource(id = R.drawable.ic_menu), // Substitua com o ícone correspondente
+                painter = painterResource(id = R.drawable.ic_menu),
                 contentDescription = "Menu",
                 modifier = Modifier
                     .size(30.dp)
-                    .clickable { onMenuClick() } // Abre o Drawer
+                    .clickable { menuExpanded = true }
             )
 
             // Ícone do perfil
             Image(
-                painter = painterResource(id = R.drawable.ic_profile), // Substitua com o ícone correspondente
+                painter = painterResource(id = R.drawable.ic_profile),
                 contentDescription = "Perfil",
                 modifier = Modifier
                     .size(30.dp)
-                    .clickable { navigateTo("login") } // Navega para a tela de login
+                    .clickable { navigateTo("login") }
             )
+
+            // Menu Dropdown
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false },
+                modifier = Modifier.background(Color.White, shape = RoundedCornerShape(8.dp))
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_key),
+                                contentDescription = "Gerador de Senha",
+                                modifier = Modifier.size(20.dp),
+                                tint = Color(0xFF1D2B53)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Gerador de Senha", color = Color(0xFF1D2B53))
+                        }
+                    },
+                    onClick = {
+                        navigateTo("gerarSenha")
+                        menuExpanded = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_shield),
+                                contentDescription = "Verificação de Segurança",
+                                modifier = Modifier.size(20.dp),
+                                tint = Color(0xFF1D2B53)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Verificação de Segurança", color = Color(0xFF1D2B53))
+                        }
+                    },
+                    onClick = {
+                        verificationExpanded = !verificationExpanded // Expande submenus
+                    }
+                )
+
+                // Submenus de Verificação de Segurança
+                if (verificationExpanded) {
+                    DropdownMenuItem(
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_email),
+                                    contentDescription = "E-mail",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.Gray
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text("E-mail", color = Color.Gray)
+                            }
+                        },
+                        onClick = {
+                            navigateTo("verificacaoEmail")
+                            menuExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_url),
+                                    contentDescription = "URL",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.Gray
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text("URL", color = Color.Gray)
+                            }
+                        },
+                        onClick = {
+                            navigateTo("verificacaoUrl")
+                            menuExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_file),
+                                    contentDescription = "Arquivos",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.Gray
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text("Arquivos", color = Color.Gray)
+                            }
+                        },
+                        onClick = {
+                            navigateTo("verificacaoArquivos")
+                            menuExpanded = false
+                        }
+                    )
+                }
+
+                DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_chat),
+                                contentDescription = "Chat de Suporte",
+                                modifier = Modifier.size(20.dp),
+                                tint = Color(0xFF1D2B53)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Chat de Suporte", color = Color(0xFF1D2B53))
+                        }
+                    },
+                    onClick = {
+                        navigateTo("chatSuporte")
+                        menuExpanded = false
+                    }
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
         // Logo do aplicativo
         Image(
-            painter = painterResource(id = R.drawable.logo_cyber), // Substitua com o ID correto do logo
+            painter = painterResource(id = R.drawable.logo_cyber),
             contentDescription = "Logo",
             modifier = Modifier.size(100.dp),
             contentScale = ContentScale.Crop
@@ -71,7 +193,7 @@ fun TelaInicial(navigateTo: (String) -> Unit, onMenuClick: () -> Unit) {
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp
             ),
-            color = Color(0xFF123456), // Ajuste a cor do texto de acordo com o design
+            color = Color(0xFF123456),
             modifier = Modifier.padding(16.dp)
         )
 
@@ -85,7 +207,7 @@ fun TelaInicial(navigateTo: (String) -> Unit, onMenuClick: () -> Unit) {
             // Primeira linha com dois botões lado a lado
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 // Botão Gerar Senhas
                 Button(
@@ -102,7 +224,7 @@ fun TelaInicial(navigateTo: (String) -> Unit, onMenuClick: () -> Unit) {
                         verticalArrangement = Arrangement.Center
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_key), // Substitua com o ícone de senha
+                            painter = painterResource(id = R.drawable.ic_key),
                             contentDescription = "Gerar Senhas",
                             modifier = Modifier.size(40.dp)
                         )
@@ -126,7 +248,7 @@ fun TelaInicial(navigateTo: (String) -> Unit, onMenuClick: () -> Unit) {
                         verticalArrangement = Arrangement.Center
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_shield), // Substitua com o ícone de segurança
+                            painter = painterResource(id = R.drawable.ic_shield),
                             contentDescription = "Verificação de Segurança",
                             modifier = Modifier.size(40.dp)
                         )
@@ -152,7 +274,7 @@ fun TelaInicial(navigateTo: (String) -> Unit, onMenuClick: () -> Unit) {
                     verticalArrangement = Arrangement.Center
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_chat), // Substitua com o ícone de chat
+                        painter = painterResource(id = R.drawable.ic_chat),
                         contentDescription = "Chat de Suporte",
                         modifier = Modifier.size(40.dp)
                     )
