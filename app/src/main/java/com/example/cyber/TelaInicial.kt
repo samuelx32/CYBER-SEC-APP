@@ -81,7 +81,7 @@ fun TelaInicial(navigateTo: (String) -> Unit) {
                     text = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_shield),
+                                painter = painterResource(id = R.drawable.ic_chat),
                                 contentDescription = "Verificação de Segurança",
                                 modifier = Modifier.size(20.dp),
                                 tint = Color(0xFF1D2B53)
@@ -157,7 +157,7 @@ fun TelaInicial(navigateTo: (String) -> Unit) {
                     text = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_chat),
+                                painter = painterResource(id = R.drawable.ic_shield),
                                 contentDescription = "Chat de Suporte",
                                 modifier = Modifier.size(20.dp),
                                 tint = Color(0xFF1D2B53)
@@ -264,7 +264,7 @@ fun TelaInicial(navigateTo: (String) -> Unit) {
 
             // Segunda linha com um botão
             Button(
-                onClick = { navigateTo("chatSuporte") },
+                onClick = { navigateTo("chatSuporte") },  // Navega para o chatbot
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53)),
                 modifier = Modifier
@@ -285,7 +285,6 @@ fun TelaInicial(navigateTo: (String) -> Unit) {
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(40.dp))
     }
+
 }

@@ -17,11 +17,12 @@ import androidx.navigation.compose.composable
 import com.example.cyber.ui.theme.CyberTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val navController = rememberNavController()  // O NavController do aplicativo
-            AppWithDrawer(navController = navController)  // Função que inclui o Drawer
+            val navController = rememberNavController()
+            AppWithDrawer(navController = navController)
         }
     }
 }
@@ -34,7 +35,7 @@ fun AppWithDrawer(navController: NavHostController) {
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            // Aqui você pode adicionar o conteúdo do menu lateral, se necessário
+            // Conteúdo do menu lateral, se necessário
         }
     ) {
         AppNavHost(navController = navController)
@@ -53,18 +54,54 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                 navController.navigate(route)
             })
         }
-
         composable(route = "gerarSenha") {
             GeradorDeSenhas(navController = navController)
         }
-
         composable(route = "login") {
             LoginScreen(navController = navController)
         }
-
-        // Adiciona a rota para a tela de Verificação
         composable(route = "VerificacaoTela") {
             VerificacaoTela(navigateTo = { route ->
+                navController.navigate(route)
+            })
+        }
+        composable(route = "verificacaoEmail") {
+            VerificacaoEmailScreen(navigateTo = { route ->
+                navController.navigate(route)
+            })
+        }
+        composable(route = "chatSuporte") { // Verifique se a rota é "chatSuporte"
+            ChatBotScreen(navigateTo = { route ->
+                navController.navigate(route)
+            })
+        }
+        composable(route = "verificacaoUrl") {
+            VerificacaoUrlScreen(navigateTo = { route ->
+                navController.navigate(route)
+            })
+        }
+        composable(route = "VerificacaoArquivos") {
+            VerificacaoArquivoScreen(navigateTo = { route ->
+                navController.navigate(route)
+            })
+        }
+        composable(route = "resultadoSeguro") {
+            ResultadoSeguroScreen(navigateTo = { route ->
+                navController.navigate(route)
+            })
+        }
+        composable(route = "resultadoAlerta") {
+            ResultadoAlertaScreen(navigateTo = { route ->
+                navController.navigate(route)
+            })
+        }
+        composable(route = "alertUrl") {
+            AlertaUrlScreen(navigateTo = { route ->
+                navController.navigate(route)
+            })
+        }
+        composable(route = "alertArquivo") {
+            AlertaArquivoScreen(navigateTo = { route ->
                 navController.navigate(route)
             })
         }

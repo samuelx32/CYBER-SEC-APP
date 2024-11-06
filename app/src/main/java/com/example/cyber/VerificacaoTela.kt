@@ -1,20 +1,20 @@
 package com.example.cyber
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.util.Log
 
 @Composable
 fun VerificacaoTela(navigateTo: (String) -> Unit) {
@@ -24,8 +24,34 @@ fun VerificacaoTela(navigateTo: (String) -> Unit) {
             .background(Color(0xFFCBD6E2))
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
+        // Cabeçalho com ícones de menu e perfil
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Ícone do menu
+            Image(
+                painter = painterResource(id = R.drawable.ic_menu),
+                contentDescription = "Menu",
+                modifier = Modifier
+                    .size(30.dp)
+                    .clickable { /* Ação do menu, caso necessário */ }
+            )
+
+            // Ícone do perfil
+            Image(
+                painter = painterResource(id = R.drawable.ic_profile),
+                contentDescription = "Perfil",
+                modifier = Modifier
+                    .size(30.dp)
+                    .clickable { navigateTo("login") }
+            )
+        }
+
         // Título
         Text(
             text = "Por favor, selecione o que você deseja verificar",
@@ -39,7 +65,10 @@ fun VerificacaoTela(navigateTo: (String) -> Unit) {
 
         // Botão E-Mail
         Button(
-            onClick = { navigateTo("verificacaoEmail") },
+            onClick = {
+                Log.d("VerificacaoTela", "Navegando para verificação de e-mail")
+                navigateTo("verificacaoEmail")
+            },
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53)),
             modifier = Modifier
@@ -52,34 +81,15 @@ fun VerificacaoTela(navigateTo: (String) -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Divider com "ou"
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Divider(
-                color = Color(0xFF1D2B53),
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = "or",
-                color = Color(0xFF1D2B53),
-                modifier = Modifier.padding(horizontal = 8.dp),
-                fontSize = 14.sp
-            )
-            Divider(
-                color = Color(0xFF1D2B53),
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
+        // Divider com "or"
+        OrDivider()
 
         // Botão URL da Página
         Button(
-            onClick = { navigateTo("verificacaoUrl") },
+            onClick = {
+                Log.d("VerificacaoTela", "Navegando para verificação de URL")
+                navigateTo("verificacaoUrl")
+            },
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53)),
             modifier = Modifier
@@ -92,34 +102,15 @@ fun VerificacaoTela(navigateTo: (String) -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Divider com "ou"
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Divider(
-                color = Color(0xFF1D2B53),
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = "or",
-                color = Color(0xFF1D2B53),
-                modifier = Modifier.padding(horizontal = 8.dp),
-                fontSize = 14.sp
-            )
-            Divider(
-                color = Color(0xFF1D2B53),
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
+        // Divider com "or"
+        OrDivider()
 
         // Botão Arquivos
         Button(
-            onClick = { navigateTo("verificacaoArquivos") },
+            onClick = {
+                Log.d("VerificacaoTela", "Navegando para verificação de arquivos")
+                navigateTo("VerificacaoArquivos")
+            },
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53)),
             modifier = Modifier
@@ -129,5 +120,31 @@ fun VerificacaoTela(navigateTo: (String) -> Unit) {
         ) {
             Text(text = "Arquivos", color = Color.White, fontSize = 18.sp)
         }
+    }
+}
+
+// Função para o divisor com o texto "or"
+@Composable
+fun OrDivider() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Divider(
+            color = Color(0xFF1D2B53),
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = "or",
+            color = Color(0xFF1D2B53),
+            modifier = Modifier.padding(horizontal = 8.dp),
+            fontSize = 14.sp
+        )
+        Divider(
+            color = Color(0xFF1D2B53),
+            modifier = Modifier.weight(1f)
+        )
     }
 }
