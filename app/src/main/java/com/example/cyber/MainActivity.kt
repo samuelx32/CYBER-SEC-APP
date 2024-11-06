@@ -16,7 +16,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import com.example.cyber.ui.theme.CyberTheme
 
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,14 +34,12 @@ fun AppWithDrawer(navController: NavHostController) {
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-
+            // Aqui você pode adicionar o conteúdo do menu lateral, se necessário
         }
     ) {
-
         AppNavHost(navController = navController)
     }
 }
-
 
 @Composable
 fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -64,9 +61,15 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable(route = "login") {
             LoginScreen(navController = navController)
         }
+
+        // Adiciona a rota para a tela de Verificação
+        composable(route = "VerificacaoTela") {
+            VerificacaoTela(navigateTo = { route ->
+                navController.navigate(route)
+            })
+        }
     }
 }
-
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {

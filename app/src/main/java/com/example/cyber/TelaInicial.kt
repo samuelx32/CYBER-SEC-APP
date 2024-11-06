@@ -234,8 +234,9 @@ fun TelaInicial(navigateTo: (String) -> Unit) {
                 }
 
                 // Botão Verificação de Segurança
+                // Botão Verificação de Segurança
                 Button(
-                    onClick = { navigateTo("verificacaoSeguranca") },
+                    onClick = { navigateTo("VerificacaoTela") },  // Navega para a tela de verificação
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53)),
                     modifier = Modifier
@@ -256,6 +257,7 @@ fun TelaInicial(navigateTo: (String) -> Unit) {
                         Text(text = "Verificação de Segurança", color = Color.White)
                     }
                 }
+
             }
 
             Spacer(modifier = Modifier.height(20.dp))
