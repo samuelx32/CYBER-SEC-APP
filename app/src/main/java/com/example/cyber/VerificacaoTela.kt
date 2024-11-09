@@ -15,9 +15,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.util.Log
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.navigation.NavHostController
 
 @Composable
-fun VerificacaoTela(navigateTo: (String) -> Unit) {
+fun VerificacaoTela(navController: NavHostController, navigateTo: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -33,6 +36,14 @@ fun VerificacaoTela(navigateTo: (String) -> Unit) {
                 .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // Seta de voltar
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Voltar",
+                    tint = Color(0xFF1D2B53)
+                )
+            }
             // Ícone do menu
             Image(
                 painter = painterResource(id = R.drawable.ic_menu),
@@ -51,7 +62,6 @@ fun VerificacaoTela(navigateTo: (String) -> Unit) {
                     .clickable { navigateTo("login") }
             )
         }
-
         // Título
         Text(
             text = "Por favor, selecione o que você deseja verificar",

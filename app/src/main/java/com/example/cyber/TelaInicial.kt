@@ -25,7 +25,7 @@ fun TelaInicial(navigateTo: (String) -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFCBD6E2))
-            .padding(16.dp),
+            .padding(15.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -180,7 +180,9 @@ fun TelaInicial(navigateTo: (String) -> Unit) {
         Image(
             painter = painterResource(id = R.drawable.logo_cyber),
             contentDescription = "Logo",
-            modifier = Modifier.size(100.dp),
+            modifier = Modifier
+                .size(150.dp),
+
             contentScale = ContentScale.Crop
         )
 
@@ -194,7 +196,8 @@ fun TelaInicial(navigateTo: (String) -> Unit) {
                 fontSize = 22.sp
             ),
             color = Color(0xFF123456),
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .padding(16.dp)
         )
 
         Spacer(modifier = Modifier.height(40.dp))

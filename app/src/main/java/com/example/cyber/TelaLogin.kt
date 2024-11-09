@@ -4,24 +4,28 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController  // IMPORTAÇÃO NECESSÁRIA
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun LoginScreen(navController: NavHostController) { // Login com google implementado mas falta redirecionar o usuário logado
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -30,25 +34,33 @@ fun LoginScreen(navController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        //Cabeçalho com ícones de menu e perfil
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Seta de voltar
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Voltar",
+                    tint = Color(0xFF1D2B53)
+                )
+            }
+        }
         // Logo
         Image(
             painter = painterResource(id = R.drawable.logo_cyber), // Substitua com o ID correto do logo
             contentDescription = "Logo",
-            modifier = Modifier.size(100.dp),
+            modifier = Modifier.size(200.dp),
             contentScale = ContentScale.Crop
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Título
-        Text(
-            text = "CyberJunin",
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 28.sp
-            ),
-            color = Color(0xFF123456)
-        )
+
 
         // Subtítulo
         Text(
@@ -115,7 +127,9 @@ fun LoginScreen(navController: NavHostController) {
 
         // Botão "Continue with Google"
         Button(
-            onClick = { /* Ação do botão */ },
+            onClick = { val activity = context as? MainActivity
+                activity?.startSignIn()
+            },
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             modifier = Modifier
@@ -130,27 +144,6 @@ fun LoginScreen(navController: NavHostController) {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = "Continue with Google", color = Color.Black)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Botão "Continue with Apple"
-        Button(
-            onClick = { /* Ação do botão */ },
-            shape = RoundedCornerShape(10.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-        ) {
-            // Adicionar ícone da Apple
-            Image(
-                painter = painterResource(id = R.drawable.ic_apple), // Substitua pelo ícone da Apple
-                contentDescription = "Apple",
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Continue with Apple", color = Color.Black)
         }
 
         Spacer(modifier = Modifier.height(16.dp))

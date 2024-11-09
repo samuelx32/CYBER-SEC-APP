@@ -1,5 +1,4 @@
 package com.example.cyber
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,9 +14,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import com.example.cyber.ui.theme.CyberTheme
-
+import androidx.activity.result.contract.ActivityResultContracts
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
+import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
+import com.google.firebase.auth.FirebaseAuth
+import android.widget.Toast
 class MainActivity : ComponentActivity() {
-
+    // 1. Adicionar o launcher para autenticação
+    private val signInLauncher = registerForActivityResult(
+        FirebaseAuthUIActivityResultContract()
+    ) { res ->
+        onSignInResult(res)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -25,7 +34,37 @@ class MainActivity : ComponentActivity() {
             AppWithDrawer(navController = navController)
         }
     }
+    // 2. Função para iniciar o login
+    fun startSignIn() {
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.GoogleBuilder().build()
+        )
+
+        val signInIntent = AuthUI.getInstance()
+            .createSignInIntentBuilder()
+            .setAvailableProviders(providers)
+            .build()
+
+        signInLauncher.launch(signInIntent)
+    }
+    // 3. Função para tratar o resultado do login
+    private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
+        if (result.resultCode == RESULT_OK) {
+            // Login bem sucedido
+            val user = FirebaseAuth.getInstance().currentUser
+            // Aqui você pode navegar para outra tela
+            // Por exemplo: navController.navigate("home")
+        } else {
+            // Login falhou
+            Toast.makeText(
+                this,
+                "Erro no login com Google",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 }
+
 
 @Composable
 fun AppWithDrawer(navController: NavHostController) {
@@ -61,17 +100,17 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             LoginScreen(navController = navController)
         }
         composable(route = "VerificacaoTela") {
-            VerificacaoTela(navigateTo = { route ->
+            VerificacaoTela(navController = navController ,navigateTo = { route ->
                 navController.navigate(route)
             })
         }
         composable(route = "verificacaoEmail") {
-            VerificacaoEmailScreen(navigateTo = { route ->
+            VerificacaoEmailScreen(navController = navController,navigateTo = { route ->
                 navController.navigate(route)
             })
         }
         composable(route = "chatSuporte") { // Verifique se a rota é "chatSuporte"
-            ChatBotScreen(navigateTo = { route ->
+            ChatBotScreen(navController = navController, navigateTo = { route ->
                 navController.navigate(route)
             })
         }

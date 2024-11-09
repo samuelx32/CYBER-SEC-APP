@@ -1,29 +1,67 @@
 package com.example.cyber
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.navigation.NavHostController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatBotScreen(navigateTo: (String) -> Unit) {
+fun ChatBotScreen(navController: NavHostController, navigateTo: (String) -> Unit) {
     var messages by remember { mutableStateOf(listOf("Em que posso ajudar!")) }
     var inputText by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFFD4D8E2))
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+        // Cabeçalho com ícones de menu e perfil
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Seta de voltar
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Voltar",
+                    tint = Color(0xFF1D2B53)
+                )
+            }
+            // Ícone do menu
+            Image(
+                painter = painterResource(id = R.drawable.ic_menu),
+                contentDescription = "Menu",
+                modifier = Modifier
+                    .size(30.dp)
+                    .clickable { /* Ação do menu, caso necessário */ }
+            )
+
+            // Ícone do perfil
+            Image(
+                painter = painterResource(id = R.drawable.ic_profile),
+                contentDescription = "Perfil",
+                modifier = Modifier
+                    .size(30.dp)
+                    .clickable { navigateTo("login") }
+            )
+        }
         // Displaying messages
         Column(
             modifier = Modifier

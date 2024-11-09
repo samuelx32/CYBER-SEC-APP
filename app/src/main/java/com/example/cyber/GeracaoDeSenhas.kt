@@ -30,6 +30,8 @@ fun GeradorDeSenhas(navController: NavHostController) {
     var passwordStrength by remember { mutableStateOf("Média") }
     var passwordStrengthProgress by remember { mutableFloatStateOf(0.5f) }
     var progressBarColor by remember { mutableStateOf(Color.Yellow) } // Cor da barra de progresso
+    var showError by remember { mutableStateOf(false) } // Variável para exibir o erro
+    val tamMin = 8 // Valor mínimo obrigatorio de caractres
 
     Column(
         modifier = Modifier
@@ -103,14 +105,20 @@ fun GeradorDeSenhas(navController: NavHostController) {
 
         Button(
             onClick = {
-                generatedPassword = generatePassword(
-                    length.toIntOrNull() ?: 8,
-                    includeUppercase,
-                    includeLowercase,
-                    includeNumbers,
-                    includeSymbols
-                )
-                passwordStrength = calculatePasswordStrength(generatedPassword)
+                val tamInp = length.toIntOrNull() ?: 0
+                if (tamInp < tamMin) {
+                    showError = true // Exibe o erro caso o tamanho nao for >= 8
+                } else {
+                    showError = false
+                    generatedPassword = generatePassword(
+                        length.toIntOrNull() ?: 8,
+                        includeUppercase,
+                        includeLowercase,
+                        includeNumbers,
+                        includeSymbols
+                    )
+                    passwordStrength = calculatePasswordStrength(generatedPassword)
+                }
                 when (passwordStrength) {
                     "Fraca" -> {
                         passwordStrengthProgress = 0.25f
@@ -137,6 +145,15 @@ fun GeradorDeSenhas(navController: NavHostController) {
                 .height(60.dp)
         ) {
             Text(text = "Gerar Senha", color = Color.White, fontSize = 18.sp)
+        }
+
+        // Exibir o erro caso o comprimento for menor que o minimo
+        if (showError) {
+            Text(
+                text = "O comprimento mínimo é de $tamMin caracteres.",
+                color = Color.Red,
+                fontSize = 14.sp
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
