@@ -3,21 +3,25 @@ package com.example.cyber
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.navigation.NavHostController
 import androidx.compose.ui.text.font.FontWeight
-
-
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavHostController
 
 @Composable
 fun GeradorDeSenhas(navController: NavHostController) {
@@ -30,6 +34,7 @@ fun GeradorDeSenhas(navController: NavHostController) {
     var passwordStrength by remember { mutableStateOf("Média") }
     var passwordStrengthProgress by remember { mutableFloatStateOf(0.5f) }
     var progressBarColor by remember { mutableStateOf(Color.Yellow) } // Cor da barra de progresso
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -60,25 +65,31 @@ fun GeradorDeSenhas(navController: NavHostController) {
                     fontSize = 22.sp,
                     color = Color(0xFF1D2B53)
                 ),
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f), // Garante que o texto ocupe o espaço restante
+                textAlign = TextAlign.Center // Centraliza o texto
             )
+            Spacer(modifier = Modifier.width(48.dp)) // Espaço adicional para o ícone à esquerda
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Insira o comprimento da senha a ser gerada:",
+            text = "Escolha as opções e insira o comprimento da senha:",
             color = Color(0xFF123456),
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
+
         OutlinedTextField(
             value = length,
             onValueChange = { newText ->
                 if (newText.all { it.isDigit() }) {
-                    length = newText // Aceita apenas números
+                    length = newText
                 }
             },
-            placeholder = { Text("Apenas números") },
+            label = { Text("Comprimento da senha") },
+            placeholder = { Text("Digite o número de caracteres") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier
                 .fillMaxWidth()
@@ -103,14 +114,16 @@ fun GeradorDeSenhas(navController: NavHostController) {
 
         Button(
             onClick = {
+                val tamInp = length.toIntOrNull() ?: 0
                 generatedPassword = generatePassword(
-                    length.toIntOrNull() ?: 8,
+                    tamInp,
                     includeUppercase,
                     includeLowercase,
                     includeNumbers,
                     includeSymbols
                 )
                 passwordStrength = calculatePasswordStrength(generatedPassword)
+
                 when (passwordStrength) {
                     "Fraca" -> {
                         passwordStrengthProgress = 0.25f
@@ -143,23 +156,29 @@ fun GeradorDeSenhas(navController: NavHostController) {
 
         OutlinedTextField(
             value = generatedPassword,
-            onValueChange = { generatedPassword = it },
+            onValueChange = {},
             readOnly = true,
-            placeholder = { Text("Senha Gerada") },
+            label = { Text("Senha Gerada") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
         )
 
         Button(
-            onClick = { /* lógica para copiar senha */ },
+            onClick = {
+                val clipboardManager =
+                    context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clipData = ClipData.newPlainText("Generated Password", generatedPassword)
+                clipboardManager.setPrimaryClip(clipData)
+                Toast.makeText(context, "Senha copiada!", Toast.LENGTH_SHORT).show()
+            },
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53)),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
         ) {
-            Text(text = "Copy", color = Color.White)
+            Text(text = "Copiar", color = Color.White)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
