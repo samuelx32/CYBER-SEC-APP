@@ -53,19 +53,30 @@ fun verificaEmail(email: String, conteudo: String): Boolean {
 }
 
 @Composable
-fun VerificacaoEmailScreen(navController: NavHostController, navigateTo: (String) -> Unit) {
+fun VerificacaoEmailScreen(
+    navController: NavHostController,
+    navigateTo: (String) -> Unit,
+    viewModel: HistoricoGeralViewModel // ViewModel compartilhado para salvar no histórico
+) {
     var email by remember { mutableStateOf("") }
     var conteudo by remember { mutableStateOf("") }
     var links by remember { mutableStateOf("") }
     var showSnackbar by remember { mutableStateOf(false) }
 
-    // Função para verificar os campos
+    // Função para verificar os campos e salvar o resultado no histórico
     fun verificarCampos() {
         if (email.isEmpty() && conteudo.isEmpty() && links.isEmpty()) {
             showSnackbar = true
         } else {
             showSnackbar = false
-            if (verificaEmail(email, conteudo)) {
+            val resultadoSeguro = verificaEmail(email, conteudo)
+            val status = if (resultadoSeguro) "Seguro" else "Maligno"
+
+            // Adiciona o resultado ao histórico
+            viewModel.adicionarItem("E-mail", email, status)
+
+            // Navega para a tela de resultado
+            if (resultadoSeguro) {
                 navigateTo("resultadoSeguro")
             } else {
                 navigateTo("resultadoAlerta")
@@ -82,7 +93,7 @@ fun VerificacaoEmailScreen(navController: NavHostController, navigateTo: (String
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Cabeçalho com apenas a seta de voltar
+        // Cabeçalho com a seta de voltar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -96,11 +107,9 @@ fun VerificacaoEmailScreen(navController: NavHostController, navigateTo: (String
                     tint = Color(0xFF1D2B53)
                 )
             }
-
-            Spacer(modifier = Modifier.width(48.dp))
         }
 
-        // Card de título e subtítulo
+        // Card de título
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -125,7 +134,7 @@ fun VerificacaoEmailScreen(navController: NavHostController, navigateTo: (String
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Verificação de Segurança",
+                        text = "Verificação de E-mail",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -133,7 +142,7 @@ fun VerificacaoEmailScreen(navController: NavHostController, navigateTo: (String
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Insira as informações do email recebido para análise",
+                        text = "Insira as informações do e-mail para análise.",
                         fontSize = 16.sp,
                         color = Color.White,
                         textAlign = TextAlign.Center
@@ -152,42 +161,27 @@ fun VerificacaoEmailScreen(navController: NavHostController, navigateTo: (String
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email do remetente") },
+                label = { Text("E-mail do remetente") },
                 placeholder = { Text("exemplo@dominio.com") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF3949AB),
-                    unfocusedBorderColor = Color(0xFF9FA8DA)
-                )
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = conteudo,
                 onValueChange = { conteudo = it },
-                label = { Text("Conteúdo do email") },
-                placeholder = { Text("Digite o conteúdo completo do email...") },
+                label = { Text("Conteúdo do e-mail") },
+                placeholder = { Text("Digite o conteúdo completo do e-mail...") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp), // Define altura fixa
-                shape = RoundedCornerShape(8.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF3949AB),
-                    unfocusedBorderColor = Color(0xFF9FA8DA)
-                )
+                    .height(120.dp)
             )
 
             OutlinedTextField(
                 value = links,
                 onValueChange = { links = it },
                 label = { Text("Links anexados") },
-                placeholder = { Text("Cole aqui os links presentes no email...") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF3949AB),
-                    unfocusedBorderColor = Color(0xFF9FA8DA)
-                )
+                placeholder = { Text("Cole aqui os links presentes no e-mail...") },
+                modifier = Modifier.fillMaxWidth()
             )
         }
 
@@ -197,85 +191,22 @@ fun VerificacaoEmailScreen(navController: NavHostController, navigateTo: (String
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
+            shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.elevatedButtonColors(
                 containerColor = Color(0xFF061233),
                 contentColor = Color.White
-            ),
-            elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 6.dp),
-            shape = RoundedCornerShape(12.dp)
+            )
         ) {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.MailLock,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Verificar", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            }
+            Text("Verificar", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
-        // Card "Como funciona?"
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFFD4D8E2),
-                                Color(0xFFE0E3ED)
-                            )
-                        )
-                    )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Como funciona?",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF061233),
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Nossa análise verifica múltiplos fatores de segurança para identificar possíveis ameaças no email recebido.",
-                        fontSize = 16.sp,
-                        color = Color(0xFF061233),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-        }
-
-        // Snackbar para mensagens de erro
+        // Snackbar de validação
         if (showSnackbar) {
             Snackbar(
                 modifier = Modifier.padding(16.dp),
-                contentColor = Color.Red,
-                containerColor = Color(0xFFD4D8E2),
-                action = {
-                    TextButton(onClick = { showSnackbar = false }) {
-                        Text("Fechar", color = Color(0xFF061233))
-                    }
-                }
+                containerColor = Color(0xFF1D2B53)
             ) {
-                Text(
-                    "Por favor, preencha pelo menos um campo.",
-                    textAlign = TextAlign.Center
-                )
+                Text("Por favor, preencha pelo menos um campo.", color = Color.White)
             }
         }
     }

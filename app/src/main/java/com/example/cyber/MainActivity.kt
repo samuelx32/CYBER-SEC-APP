@@ -16,7 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -30,8 +30,15 @@ import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.isSystemInDarkTheme
-import com.example.cyber.DrawerContent
+
+
+
 import androidx.compose.ui.draw.clip
+
+import android.app.Activity
+
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Composable
 
 
 class MainActivity : ComponentActivity() {
@@ -55,7 +62,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun startSignIn() {
+    private fun startSignIn() {
         val providers = arrayListOf(AuthUI.IdpConfig.GoogleBuilder().build())
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()
@@ -65,15 +72,20 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
-        if (result.resultCode == RESULT_OK) {
+        val context = this
+        if (result.resultCode == Activity.RESULT_OK) {
             val user = FirebaseAuth.getInstance().currentUser
             Toast.makeText(
-                this,
+                context,
                 "Bem-vindo, ${user?.displayName ?: "Usuário"}!",
                 Toast.LENGTH_SHORT
             ).show()
         } else {
-            Toast.makeText(this, "Erro no login com Google", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                "Erro no login com Google",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }
@@ -151,6 +163,8 @@ fun AppWithDrawer(
                             val user = FirebaseAuth.getInstance().currentUser
                             val photoUrl = user?.photoUrl?.toString()
 
+
+
                             if (photoUrl != null) {
                                 AsyncImage(
                                     model = photoUrl,
@@ -189,6 +203,12 @@ fun AppWithDrawer(
 }
 
 
+
+
+
+
+
+
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -196,31 +216,70 @@ fun AppNavHost(
     darkThemeEnabled: Boolean,
     onThemeChange: (Boolean) -> Unit
 ) {
+    // Inicialize o ViewModel compartilhado
+    val historicoViewModel: HistoricoGeralViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
     NavHost(
         navController = navController,
         startDestination = "home",
         modifier = modifier
     ) {
-        composable("home") { TelaInicial(navigateTo = { navController.navigate(it) }) }
-        composable("gerarSenha") { GeradorDeSenhas(navController) }
-        composable("VerificacaoTela") { VerificacaoTela(navController = navController, navigateTo = { route -> navController.navigate(route) }) }
-        composable("verificacaoEmail") { VerificacaoEmailScreen(navController, { navController.navigate(it) }) }
-        composable("verificacaoUrl") { VerificacaoUrlScreen(navController, { navController.navigate(it) }) }
-        composable("VerificacaoArquivos") { VerificacaoArquivoScreen(navController, { navController.navigate(it) }) }
-        composable("chatSuporte") { ChatBotScreen(navController, { navController.navigate(it) }) }
+        composable("home") {
+            TelaInicial(navigateTo = { navController.navigate(it) })
+        }
 
+        composable("gerarSenha") {
+            GeradorDeSenhas(navController, historicoViewModel)
+        }
 
+        composable("VerificacaoTela") {
+            VerificacaoTela(navController = navController, navigateTo = { route -> navController.navigate(route) })
+        }
 
-                composable("resultadoSeguro") { ResultadoSeguroScreen { navController.navigate(it) } }
-                composable("resultadoAlerta") { ResultadoAlertaScreen { navController.navigate(it) } }
-                composable("login") { LoginScreen(navController = navController) }
-                composable("configuracoes") { ConfiguracoesScreen(navController = navController) }
-                composable("historico") { HistoricoScreen(navController = navController) } // Adicionei a rota do Histórico
+        composable("verificacaoEmail") {
+            VerificacaoEmailScreen(navController, { navController.navigate(it) }, historicoViewModel)
+        }
 
+        composable("verificacaoUrl") {
+            VerificacaoUrlScreen(navController, { navController.navigate(it) }, historicoViewModel)
+        }
 
+        composable("VerificacaoArquivos") {
+            VerificacaoArquivoScreen(navController, { navController.navigate(it) }, historicoViewModel)
+        }
 
+        composable("chatSuporte") {
+            ChatBotScreen(navController, { navController.navigate(it) })
+        }
+
+        composable("resultadoSeguro") {
+            ResultadoSeguroScreen { navController.navigate(it) }
+        }
+
+        composable("resultadoAlerta") {
+            ResultadoAlertaScreen { navController.navigate(it) }
+        }
+
+        composable("login") {
+            LoginScreen(navController = navController)
+        }
+
+        composable("configuracoes") {
+            ConfiguracoesScreen(navController = navController)
+        }
+
+        composable(route = "historico") {
+            HistoricoScreen(historicoViewModel)
+        }
+
+        composable("telaCadastro") {
+            TelaCadastro(navController = navController)
+        }
     }
 }
+
+
+
 @Composable
 fun DrawerContent(
     navController: NavHostController,
@@ -247,6 +306,7 @@ fun DrawerContent(
             NavigationItem("Gerador de Senhas", "gerarSenha", navController, onClose)
             NavigationItem("Verificação de E-mails", "verificacaoEmail", navController, onClose)
             NavigationItem("Verificação de URLs", "verificacaoUrl", navController, onClose)
+            NavigationItem("Verificação de Arquivos", "VerificacaoArquivos", navController, onClose)
             NavigationItem("Chat de Suporte", "chatSuporte", navController, onClose)
             NavigationItem("Histórico", "historico", navController, onClose)
         }
@@ -301,4 +361,3 @@ fun NavigationItem(
         )
     }
 }
-

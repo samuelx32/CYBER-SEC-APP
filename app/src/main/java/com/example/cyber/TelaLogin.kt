@@ -1,11 +1,12 @@
 package com.example.cyber
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,154 +15,155 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavHostController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
+    val context = LocalContext.current
+    val auth = FirebaseAuth.getInstance()
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val context = LocalContext.current
 
+    // Launcher para Google Sign-In
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        if (task.isSuccessful) {
+            val account = task.result
+            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+
+            // Autenticação no Firebase
+            auth.signInWithCredential(credential)
+                .addOnCompleteListener { firebaseTask ->
+                    if (firebaseTask.isSuccessful) {
+                        Toast.makeText(context, "Login com Google bem-sucedido!", Toast.LENGTH_SHORT).show()
+                        navController.navigate("home")
+                    } else {
+                        Toast.makeText(context, "Erro: ${firebaseTask.exception?.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+        } else {
+            Toast.makeText(context, "Erro ao autenticar com Google!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // UI da tela de login
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFCBD6E2)) // Fundo da tela
+            .background(Color(0xFFCBD6E2))
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween // Distribui o conteúdo uniformemente
+        verticalArrangement = Arrangement.Center
     ) {
-        // Cabeçalho (Seta para voltar)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Voltar",
-                    tint = Color(0xFF1D2B53)
-                )
-            }
-        }
-
-        // Conteúdo Principal
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Logo
-            Image(
-                painter = painterResource(id = R.drawable.ic_logo), // Substitua com o ID correto do logo
-                contentDescription = "Logo",
-                modifier = Modifier.size(200.dp),
-                contentScale = ContentScale.Crop
-            )
-
-            // Subtítulo
-            Text(
-                text = "Cadastre sua conta!\nInsira seu email para se cadastrar.",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = Color(0xFF123456),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Campo de E-mail
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                placeholder = { Text("email@domain.com") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
-
-            // Campo de Senha
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                placeholder = { Text("Password") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Botão "Continue"
-            Button(
-                onClick = { navController.navigate("home") },
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Text(text = "Continue", color = Color.White, fontSize = 16.sp)
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Linha "or"
-            Text(
-                text = "or",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                ),
-                color = Color(0xFF123456),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Botão "Continue with Google"
-            Button(
-                onClick = {
-                    val activity = context as? MainActivity
-                    activity?.startSignIn()
-                },
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                // Ícone do Google
-                Image(
-                    painter = painterResource(id = R.drawable.ic_google), // Substitua com o ícone do Google
-                    contentDescription = "Google",
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Continue with Google", color = Color.Black, fontSize = 16.sp)
-            }
-        }
-
-        // Rodapé
-        Text(
-            text = "Ao clicar em continuar, você concorda com nossos Termos de Serviço e Política de Privacidade.",
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontSize = 12.sp
-            ),
-            color = Color(0xFF123456),
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(8.dp)
+        // Logo
+        Image(
+            painter = painterResource(id = R.drawable.ic_logo),
+            contentDescription = "Logo",
+            modifier = Modifier.size(200.dp),
+            contentScale = ContentScale.Crop
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Faça login para continuar",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color(0xFF061233)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Campos de Email e Senha
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Senha") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Botão de Login com Email/Senha
+        Button(
+            onClick = {
+                if (email.isNotEmpty() && password.isNotEmpty()) {
+                    auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                Toast.makeText(context, "Login bem-sucedido!", Toast.LENGTH_SHORT).show()
+                                navController.navigate("home")
+                            } else {
+                                Toast.makeText(context, "Erro: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                } else {
+                    Toast.makeText(context, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53))
+        ) {
+            Text("Entrar", color = Color.White, fontSize = 16.sp)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Botão de Login com Google
+        Button(
+            onClick = {
+                val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(context.getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build()
+                val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
+                val signInIntent = googleSignInClient.signInIntent
+                googleSignInLauncher.launch(signInIntent)
+            },
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_google),
+                contentDescription = "Google",
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Login com Google", color = Color.Black, fontSize = 16.sp)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Botão de Cadastro
+        TextButton(
+            onClick = { navController.navigate("telaCadastro") }
+        ) {
+            Text("Ainda não tem uma conta? Cadastre-se", color = Color(0xFF1D2B53))
+        }
     }
 }

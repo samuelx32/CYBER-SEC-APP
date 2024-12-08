@@ -22,9 +22,14 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 
 @Composable
-fun GeradorDeSenhas(navController: NavHostController) {
+fun GeradorDeSenhas(
+    navController: NavHostController,
+    viewModel: HistoricoGeralViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
     var length by remember { mutableStateOf("") }
     var includeUppercase by remember { mutableStateOf(false) }
     var includeLowercase by remember { mutableStateOf(true) }
@@ -33,7 +38,7 @@ fun GeradorDeSenhas(navController: NavHostController) {
     var generatedPassword by remember { mutableStateOf("Senha Gerada") }
     var passwordStrength by remember { mutableStateOf("Média") }
     var passwordStrengthProgress by remember { mutableFloatStateOf(0.5f) }
-    var progressBarColor by remember { mutableStateOf(Color.Yellow) } // Cor da barra de progresso
+    var progressBarColor by remember { mutableStateOf(Color.Yellow) }
     val context = LocalContext.current
 
     Column(
@@ -44,7 +49,7 @@ fun GeradorDeSenhas(navController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        // Seta de retorno ao topo
+        // Cabeçalho com seta de retorno
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -53,7 +58,7 @@ fun GeradorDeSenhas(navController: NavHostController) {
         ) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack, // Ícone padrão de retorno
+                    imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Voltar",
                     tint = Color(0xFF1D2B53)
                 )
@@ -61,15 +66,12 @@ fun GeradorDeSenhas(navController: NavHostController) {
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "Gerador de Senhas",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 22.sp,
-                    color = Color(0xFF1D2B53)
-                ),
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f), // Garante que o texto ocupe o espaço restante
-                textAlign = TextAlign.Center // Centraliza o texto
+                fontSize = 22.sp,
+                color = Color(0xFF1D2B53),
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.width(48.dp)) // Espaço adicional para o ícone à esquerda
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -77,29 +79,25 @@ fun GeradorDeSenhas(navController: NavHostController) {
         Text(
             text = "Escolha as opções e insira o comprimento da senha:",
             color = Color(0xFF123456),
-            style = MaterialTheme.typography.bodyMedium,
+            fontSize = 16.sp,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
+        // Campo de Comprimento
         OutlinedTextField(
             value = length,
             onValueChange = { newText ->
-                if (newText.all { it.isDigit() }) {
-                    length = newText
-                }
+                if (newText.all { it.isDigit() }) length = newText
             },
             label = { Text("Comprimento da senha") },
-            placeholder = { Text("Digite o número de caracteres") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        // Checkboxes para opções
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Column {
                 CheckboxWithLabel("Letras Maiúsculas", includeUppercase) { includeUppercase = it }
                 CheckboxWithLabel("Letras Minúsculas", includeLowercase) { includeLowercase = it }
@@ -112,9 +110,10 @@ fun GeradorDeSenhas(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Botão Gerar Senha
         Button(
             onClick = {
-                val tamInp = length.toIntOrNull() ?: 0
+                val tamInp = length.toIntOrNull() ?: 8
                 generatedPassword = generatePassword(
                     tamInp,
                     includeUppercase,
@@ -142,6 +141,9 @@ fun GeradorDeSenhas(navController: NavHostController) {
                         progressBarColor = Color.Green
                     }
                 }
+
+                // Salva no histórico
+                viewModel.adicionarItem("Senha Gerada", generatedPassword, "Força: $passwordStrength")
             },
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53)),
@@ -149,25 +151,24 @@ fun GeradorDeSenhas(navController: NavHostController) {
                 .fillMaxWidth()
                 .height(60.dp)
         ) {
-            Text(text = "Gerar Senha", color = Color.White, fontSize = 18.sp)
+            Text("Gerar Senha", color = Color.White, fontSize = 18.sp)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Campo com a Senha Gerada
         OutlinedTextField(
             value = generatedPassword,
             onValueChange = {},
             readOnly = true,
             label = { Text("Senha Gerada") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
+        // Botão Copiar Senha
         Button(
             onClick = {
-                val clipboardManager =
-                    context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clipData = ClipData.newPlainText("Generated Password", generatedPassword)
                 clipboardManager.setPrimaryClip(clipData)
                 Toast.makeText(context, "Senha copiada!", Toast.LENGTH_SHORT).show()
@@ -178,15 +179,13 @@ fun GeradorDeSenhas(navController: NavHostController) {
                 .fillMaxWidth()
                 .height(50.dp)
         ) {
-            Text(text = "Copiar", color = Color.White)
+            Text("Copiar", color = Color.White)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        // Barra de Progresso da Força da Senha
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Força da Senha: $passwordStrength", color = Color(0xFF123456))
             Spacer(modifier = Modifier.width(8.dp))
             LinearProgressIndicator(
@@ -207,6 +206,7 @@ fun CheckboxWithLabel(label: String, checked: Boolean, onCheckedChange: (Boolean
         Text(text = label, color = Color(0xFF123456))
     }
 }
+
 
 fun generatePassword(
     length: Int,

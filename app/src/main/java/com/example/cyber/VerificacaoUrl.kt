@@ -23,8 +23,34 @@ import androidx.navigation.NavHostController
 
 
 @Composable
-fun VerificacaoUrlScreen(navController: NavHostController, navigateTo: (String) -> Unit) {
+fun VerificacaoUrlScreen(
+    navController: NavHostController,
+    navigateTo: (String) -> Unit,
+    viewModel: HistoricoGeralViewModel // ViewModel compartilhado
+) {
     var url by remember { mutableStateOf("") }
+    var showSnackbar by remember { mutableStateOf(false) }
+
+    // Função para verificar a URL e salvar no histórico
+    fun verificarCampos() {
+        if (url.isBlank()) {
+            showSnackbar = true
+        } else {
+            showSnackbar = false
+            val seguro = verificarUrl(url)
+            val status = if (seguro) "Seguro" else "Maligno"
+
+            // Adiciona ao histórico
+            viewModel.adicionarItem("URL", url, status)
+
+            // Navega para a tela correspondente
+            if (seguro) {
+                navigateTo("resultadoSeguro")
+            } else {
+                navigateTo("alertUrl")
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -34,7 +60,7 @@ fun VerificacaoUrlScreen(navController: NavHostController, navigateTo: (String) 
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Cabeçalho com ícones de menu, voltar e perfil
+        // Cabeçalho com a seta de voltar
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -46,29 +72,20 @@ fun VerificacaoUrlScreen(navController: NavHostController, navigateTo: (String) 
                     tint = Color(0xFF1D2B53)
                 )
             }
-
-            Spacer(modifier = Modifier.width(48.dp))
         }
 
-        // Card com o título e descrição
+        // Card com título e descrição
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.Transparent // Transparente para o gradiente
-            )
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(4.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
                         brush = Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFF061233),  // Cor inicial
-                                Color(0xFF0A1C50)   // Cor final
-                            )
+                            colors = listOf(Color(0xFF061233), Color(0xFF0A1C50))
                         )
                     )
             ) {
@@ -81,51 +98,38 @@ fun VerificacaoUrlScreen(navController: NavHostController, navigateTo: (String) 
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        textAlign = TextAlign.Center
                     )
-
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Insira a URL para análise de segurança.",
                         fontSize = 16.sp,
                         color = Color.White,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        textAlign = TextAlign.Center
                     )
                 }
             }
         }
 
         // Campo de entrada para a URL
-        Column(
+        OutlinedTextField(
+            value = url,
+            onValueChange = { url = it },
+            label = { Text("URL do site") },
+            placeholder = { Text("https://exemplo.com") },
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            OutlinedTextField(
-                value = url,
-                onValueChange = { url = it },
-                label = { Text("URL do site") },
-                placeholder = { Text("https://exemplo.com") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF3949AB),
-                    unfocusedBorderColor = Color(0xFF9FA8DA)
-                )
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF3949AB),
+                unfocusedBorderColor = Color(0xFF9FA8DA)
             )
-        }
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Botão para verificar a URL
         ElevatedButton(
-            onClick = {
-                if (verificarUrl(url)) {
-                    navigateTo("resultadoSeguro")
-                } else {
-                    navigateTo("alertUrl")
-                }
-            },
+            onClick = { verificarCampos() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -133,23 +137,20 @@ fun VerificacaoUrlScreen(navController: NavHostController, navigateTo: (String) 
                 containerColor = Color(0xFF061233),
                 contentColor = Color.White
             ),
-            elevation = ButtonDefaults.elevatedButtonElevation(
-                defaultElevation = 6.dp,
-                pressedElevation = 8.dp
-            ),
+            elevation = ButtonDefaults.elevatedButtonElevation(4.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Text("Verificar URL", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        }
 
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "Verificar URL",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+        // Snackbar para validação
+        if (showSnackbar) {
+            Snackbar(
+                modifier = Modifier.padding(16.dp),
+                containerColor = Color(0xFFD4D8E2),
+                contentColor = Color.Red
+            ) {
+                Text("Por favor, insira uma URL válida.", textAlign = TextAlign.Center)
             }
         }
     }
@@ -157,13 +158,11 @@ fun VerificacaoUrlScreen(navController: NavHostController, navigateTo: (String) 
 
 // Função de verificação de URL (simulação)
 fun verificarUrl(url: String): Boolean {
-    val palavrasMaliciosas = listOf("malware", "phishing", "suspeito")
+    val palavrasMaliciosas = listOf("malware", "phishing", "suspeito", "virus", "fake")
     return !palavrasMaliciosas.any { url.contains(it, ignoreCase = true) }
 }
 
-
-
-// Tela de alerta para URL suspeito
+// Tela de alerta para URL suspeita
 @Composable
 fun AlertaUrlScreen(navigateTo: (String) -> Unit) {
     Column(
@@ -189,3 +188,4 @@ fun AlertaUrlScreen(navigateTo: (String) -> Unit) {
         }
     }
 }
+
