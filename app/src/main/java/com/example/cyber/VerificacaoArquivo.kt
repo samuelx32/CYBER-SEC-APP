@@ -31,7 +31,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 
 
 @Composable
-fun VerificacaoArquivoScreen(navController: NavHostController, navigateTo: (String) -> Unit) {
+fun VerificacaoArquivoScreen(
+    navController: NavHostController,
+    navigateTo: (String) -> Unit,
+    viewModel: HistoricoGeralViewModel // ViewModel compartilhado
+) {
     var arquivoSelecionado by remember { mutableStateOf("Nenhum arquivo selecionado") }
     var showSnackbar by remember { mutableStateOf(false) }
 
@@ -43,12 +47,20 @@ fun VerificacaoArquivoScreen(navController: NavHostController, navigateTo: (Stri
         }
     )
 
+    // Função para verificar o arquivo e salvar no histórico
     fun verificarCampos() {
         if (arquivoSelecionado == "Nenhum arquivo selecionado") {
             showSnackbar = true
         } else {
             showSnackbar = false
-            if (verificarArquivo(arquivoSelecionado)) {
+            val seguro = verificarArquivo(arquivoSelecionado)
+            val status = if (seguro) "Seguro" else "Maligno"
+
+            // Adiciona ao histórico
+            viewModel.adicionarItem("Arquivo", arquivoSelecionado, status)
+
+            // Navega para a tela correspondente
+            if (seguro) {
                 navigateTo("resultadoSeguro")
             } else {
                 navigateTo("alertArquivo")
@@ -64,7 +76,7 @@ fun VerificacaoArquivoScreen(navController: NavHostController, navigateTo: (Stri
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Cabeçalho com ícones de menu, voltar e perfil
+        // Cabeçalho com a seta de voltar
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -76,29 +88,20 @@ fun VerificacaoArquivoScreen(navController: NavHostController, navigateTo: (Stri
                     tint = Color(0xFF1D2B53)
                 )
             }
-
-            Spacer(modifier = Modifier.width(48.dp))
         }
 
-        // Card com o título e descrição
+        // Título e Descrição
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.Transparent // Transparente para o gradiente
-            )
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(4.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFF061233),  // Cor inicial
-                                Color(0xFF0A1C50)   // Cor final
-                            )
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFF061233), Color(0xFF0A1C50))
                         )
                     )
             ) {
@@ -111,87 +114,29 @@ fun VerificacaoArquivoScreen(navController: NavHostController, navigateTo: (Stri
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        textAlign = TextAlign.Center
                     )
-
                     Text(
-                        text = "Selecione o arquivo para análise",
+                        text = "Selecione o arquivo para análise.",
                         fontSize = 16.sp,
                         color = Color.White,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        textAlign = TextAlign.Center
                     )
                 }
             }
         }
 
-        // Botão de selecionar arquivo e exibir nome
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            ElevatedButton(
-                onClick = {
-                    launcher.launch("*/*") // Abrir seletor de arquivos
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.elevatedButtonColors(
-                    containerColor = Color(0xFF061233),
-                    contentColor = Color.White
-                ),
-                elevation = ButtonDefaults.elevatedButtonElevation(
-                    defaultElevation = 6.dp,
-                    pressedElevation = 8.dp
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.UploadFile,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "Selecionar Arquivo",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Text(
-                text = "Arquivo Selecionado: $arquivoSelecionado",
-                fontSize = 14.sp,
-                color = Color.Gray,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Botão para verificar o arquivo
+        // Botão para selecionar arquivo
         ElevatedButton(
-            onClick = { verificarCampos() },
+            onClick = { launcher.launch("*/*") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
+            shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.elevatedButtonColors(
                 containerColor = Color(0xFF061233),
                 contentColor = Color.White
-            ),
-            elevation = ButtonDefaults.elevatedButtonElevation(
-                defaultElevation = 6.dp,
-                pressedElevation = 8.dp
-            ),
-            shape = RoundedCornerShape(12.dp)
+            )
         ) {
             Row(
                 horizontalArrangement = Arrangement.Center,
@@ -203,25 +148,39 @@ fun VerificacaoArquivoScreen(navController: NavHostController, navigateTo: (Stri
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "Verificar",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text("Selecionar Arquivo", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
         }
 
-        // Snackbar para validação de arquivo não selecionado
+        // Nome do arquivo selecionado
+        Text(
+            text = "Arquivo Selecionado: $arquivoSelecionado",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Center
+        )
+
+        // Botão para verificar
+        ElevatedButton(
+            onClick = { verificarCampos() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.elevatedButtonColors(
+                containerColor = Color(0xFF061233),
+                contentColor = Color.White
+            )
+        ) {
+            Text("Verificar", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        }
+
+        // Snackbar para validação
         if (showSnackbar) {
             Snackbar(
                 modifier = Modifier.padding(16.dp),
                 contentColor = Color.Red,
-                containerColor = Color(0xFFD4D8E2),
-                action = {
-                    TextButton(onClick = { showSnackbar = false }) {
-                        Text("Fechar", color = Color(0xFF061233))
-                    }
-                }
+                containerColor = Color(0xFFD4D8E2)
             ) {
                 Text("Por favor, selecione um arquivo.", textAlign = TextAlign.Center)
             }

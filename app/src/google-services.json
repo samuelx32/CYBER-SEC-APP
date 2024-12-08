@@ -1,41 +1,33 @@
 {
   "project_info": {
-    "project_number": "315355644355",
-    "project_id": "andsec-authentication",
-    "storage_bucket": "andsec-authentication.firebasestorage.app"
+    "project_number": "787238517965",
+    "project_id": "cyber-junin",
+    "storage_bucket": "cyber-junin.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:315355644355:android:b1b3a47bda99fda7f77d76",
+        "mobilesdk_app_id": "1:787238517965:android:ddba2275ff8ce899ac3d84",
         "android_client_info": {
           "package_name": "com.example.cyber"
         }
       },
       "oauth_client": [
         {
-          "client_id": "315355644355-s104ih4avupfuj66mfuov88n7uqljour.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.cyber",
-            "certificate_hash": "a7b5351d0e194cdf036ee71bbd5405eec462a601"
-          }
-        },
-        {
-          "client_id": "315355644355-5gctiqaspfmvdisrkn7rp3gof3vq0gsb.apps.googleusercontent.com",
+          "client_id": "787238517965-o45csu0a8p2i437hfvum0a17gsfuq7vp.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDV6pJNgBgZm5gYBjztQQt3hzS8CRxEEww"
+          "current_key": "AIzaSyAOStX7Jw5WKYot5WN7wdxWHh4SQk7308A"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "315355644355-5gctiqaspfmvdisrkn7rp3gof3vq0gsb.apps.googleusercontent.com",
+              "client_id": "787238517965-o45csu0a8p2i437hfvum0a17gsfuq7vp.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

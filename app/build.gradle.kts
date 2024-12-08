@@ -1,7 +1,7 @@
 plugins {
-    alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.google.services)
+    id("com.android.application")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -52,33 +52,43 @@ android {
 }
 
 dependencies {
-    // Dependências do Compose
-    implementation("androidx.compose.material:material-icons-extended:1.7.5")
+    // Firebase BoM (gerencia versões automaticamente)
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation ("com.google.firebase:firebase-auth:22.3.1")
+    implementation ("com.firebaseui:firebase-ui-auth:8.0.2")
+    implementation (platform("com.google.firebase:firebase-bom:32.7.0") )// BOM para gerenciar versões
+
+    // Jetpack Compose Core
+    implementation("androidx.compose.ui:ui:1.5.4")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.5.4")
     implementation("androidx.activity:activity-compose:1.7.2")
-    implementation("androidx.compose.ui:ui:1.5.0")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.5.0")
-    implementation("androidx.compose.material3:material3:1.1.0")
-    implementation("androidx.navigation:navigation-compose:2.6.0")
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("androidx.compose.animation:animation:1.4.3")
-    implementation("io.coil-kt:coil-compose:2.2.2")
-
-    // Core Android e Lifecycle
-    implementation("androidx.core:core-ktx:1.10.0")
+    implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-    // Firebase
-    implementation(platform(libs.firebase.bom.v3231))
-    implementation(libs.firebase.ui.auth)
+    // Compose Material e Material 3
+    implementation("androidx.compose.material:material:1.5.4")
+    implementation("androidx.compose.material3:material3:1.2.1")
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+
+    // Outros
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("io.coil-kt:coil-compose:2.2.2")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
 
     // Testes
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.0")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.4")
 
     // Ferramentas de Desenvolvimento do Compose
-    debugImplementation("androidx.compose.ui:ui-tooling:1.5.0")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.0")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.5.4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.4")
+
+
 }
