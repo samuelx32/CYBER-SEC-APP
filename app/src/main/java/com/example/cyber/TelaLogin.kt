@@ -23,6 +23,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun LoginScreen(navController: NavHostController) { // Login com google implementado mas falta redirecionar o usuário logado
+    // Implementar memória de contas
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current

@@ -24,7 +24,7 @@ import androidx.navigation.NavHostController
 
 // Função de verificação de e-mail (movida para fora do composable)
 fun verificaEmail(email: String, conteudo: String): Boolean {
-    val dominiosConfiaveis = listOf(
+    val dominiosConfiaveis = listOf( //Buscar de API se possivel, com listagem de dominios confiaveis
         "gmail.com", "outlook.com", "yahoo.com", // Provedores populares
         "bradesco.com.br", "itau.com.br", "santander.com.br", "bb.com.br", "caixa.gov.br", // Bancos
         "nubank.com.br", "inter.com", "original.com.br", "banco.bradesco", "sicredi.com.br", // Bancos digitais e cooperativas
