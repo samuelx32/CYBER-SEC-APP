@@ -24,6 +24,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.android.gms.common.api.ApiException
+import android.util.Log
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
@@ -33,27 +35,37 @@ fun LoginScreen(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    // Launcher para Google Sign-In
+    // Configuração do Google Sign-In
+    val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(context.getString(R.string.default_web_client_id)) // Certifique-se de que este ID está correto
+        .requestEmail()
+        .build()
+    val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
+
+    // Launcher para o Intent de Google Sign-In
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        if (task.isSuccessful) {
-            val account = task.result
-            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            Log.d("GoogleSignIn", "Google Sign-In bem-sucedido: ${account.email}")
 
-            // Autenticação no Firebase
+            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
             auth.signInWithCredential(credential)
                 .addOnCompleteListener { firebaseTask ->
                     if (firebaseTask.isSuccessful) {
+                        Log.d("GoogleSignIn", "Autenticação no Firebase bem-sucedida")
                         Toast.makeText(context, "Login com Google bem-sucedido!", Toast.LENGTH_SHORT).show()
                         navController.navigate("home")
                     } else {
+                        Log.e("GoogleSignIn", "Falha na autenticação no Firebase", firebaseTask.exception)
                         Toast.makeText(context, "Erro: ${firebaseTask.exception?.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
-        } else {
-            Toast.makeText(context, "Erro ao autenticar com Google!", Toast.LENGTH_SHORT).show()
+        } catch (e: ApiException) {
+            Log.e("GoogleSignIn", "Erro no Google Sign-In", e)
+            Toast.makeText(context, "Erro ao autenticar com Google: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -66,7 +78,6 @@ fun LoginScreen(navController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Logo
         Image(
             painter = painterResource(id = R.drawable.ic_logo),
             contentDescription = "Logo",
@@ -85,7 +96,6 @@ fun LoginScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campos de Email e Senha
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -103,7 +113,6 @@ fun LoginScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botão de Login com Email/Senha
         Button(
             onClick = {
                 if (email.isNotEmpty() && password.isNotEmpty()) {
@@ -131,14 +140,8 @@ fun LoginScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botão de Login com Google
         Button(
             onClick = {
-                val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestIdToken(context.getString(R.string.default_web_client_id))
-                    .requestEmail()
-                    .build()
-                val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
                 val signInIntent = googleSignInClient.signInIntent
                 googleSignInLauncher.launch(signInIntent)
             },
@@ -159,7 +162,6 @@ fun LoginScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Botão de Cadastro
         TextButton(
             onClick = { navController.navigate("telaCadastro") }
         ) {

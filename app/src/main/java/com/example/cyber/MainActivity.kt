@@ -8,7 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
@@ -37,8 +37,19 @@ import androidx.compose.ui.draw.clip
 
 import android.app.Activity
 
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.Email
+
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.InsertDriveFile
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Settings
+
+
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.vector.ImageVector
 
 
 class MainActivity : ComponentActivity() {
@@ -46,6 +57,7 @@ class MainActivity : ComponentActivity() {
         FirebaseAuthUIActivityResultContract()
     ) { res -> onSignInResult(res) }
 
+    // Navegação entre telas (Definição do navController)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -159,11 +171,16 @@ fun AppWithDrawer(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { navController.navigate("login") }) {
+                        IconButton(onClick = {
+                            val user = FirebaseAuth.getInstance().currentUser // Verifica se o usuário está logado
+                            if (user != null) {
+                                navController.navigate("perfil") // Redireciona para a tela de perfil
+                            } else {
+                                navController.navigate("login") // Redireciona para a tela de login
+                            }
+                        }) {
                             val user = FirebaseAuth.getInstance().currentUser
                             val photoUrl = user?.photoUrl?.toString()
-
-
 
                             if (photoUrl != null) {
                                 AsyncImage(
@@ -183,6 +200,7 @@ fun AppWithDrawer(
                                 )
                             }
                         }
+
                     },
                     colors = TopAppBarDefaults.mediumTopAppBarColors(
                         containerColor = Color(0xFFCBD6E2), // Alterar a cor da top bar
@@ -275,9 +293,12 @@ fun AppNavHost(
         composable("telaCadastro") {
             TelaCadastro(navController = navController)
         }
+
+        composable("perfil") {
+            PerfilScreen(navController = navController)
+        }
     }
 }
-
 
 
 @Composable
@@ -290,50 +311,74 @@ fun DrawerContent(
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .width(300.dp)
+            .width(160.dp)
             .background(Color(0xFFCBD6E2))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween
+            .statusBarsPadding() // Adiciona padding para a status bar
+            .navigationBarsPadding() // Adiciona padding para a navigation bar
+            .padding(vertical = 8.dp),
+        verticalArrangement = Arrangement.Top
     ) {
-        Column {
-            Text(
-                text = "Barra de Ferramentas",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            NavigationItem("Início", "home", navController, onClose)
-            NavigationItem("Gerador de Senhas", "gerarSenha", navController, onClose)
-            NavigationItem("Verificação de E-mails", "verificacaoEmail", navController, onClose)
-            NavigationItem("Verificação de URLs", "verificacaoUrl", navController, onClose)
-            NavigationItem("Verificação de Arquivos", "VerificacaoArquivos", navController, onClose)
-            NavigationItem("Chat de Suporte", "chatSuporte", navController, onClose)
-            NavigationItem("Histórico", "historico", navController, onClose)
-        }
-        // Alternar tema
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        // Cabeçalho com margem superior
+        Text(
+            text = "Ferramentas",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+
+        // Container para os itens de navegação
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    navController.navigate("configuracoes")
-                    onClose()
-                }
-                .padding(8.dp)
+                .weight(1f) // Ocupa o espaço disponível
+                .padding(vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp) // Reduz o espaçamento entre itens
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_settings), // Substitua pelo recurso de engrenagem
-                contentDescription = "Configurações",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = "Configurações",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            NavigationRow("Início", Icons.Default.Home, "home", navController, onClose)
+            NavigationRow("Senhas", Icons.Default.Lock, "gerarSenha", navController, onClose)
+            NavigationRow("E-mails", Icons.Default.Email, "verificacaoEmail", navController, onClose)
+            NavigationRow("URLs", Icons.Default.Link, "verificacaoUrl", navController, onClose)
+            NavigationRow("Arquivos", Icons.Default.InsertDriveFile, "VerificacaoArquivos", navController, onClose)
+            NavigationRow("Suporte", Icons.Default.Chat, "chatSuporte", navController, onClose)
+            NavigationRow("Histórico", Icons.Default.History, "historico", navController, onClose)
         }
+
+        // Configurações sempre na parte inferior
+        NavigationRow("Config", Icons.Default.Settings, "configuracoes", navController, onClose)
+    }
+}
+
+@Composable
+private fun NavigationRow(
+    text: String,
+    icon: ImageVector,
+    route: String,
+    navController: NavHostController,
+    onClose: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp) // Altura fixa para cada item
+            .clickable {
+                navController.navigate(route)
+                onClose()
+            }
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp) // Ícone um pouco menor
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
     }
 }
 
@@ -342,6 +387,7 @@ fun DrawerContent(
 fun NavigationItem(
     title: String,
     route: String,
+    icon: ImageVector,
     navController: NavHostController,
     onClose: () -> Unit
 ) {
@@ -361,3 +407,4 @@ fun NavigationItem(
         )
     }
 }
+

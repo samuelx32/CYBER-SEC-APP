@@ -11,7 +11,8 @@ android {
     defaultConfig {
         applicationId = "com.example.cyber"
         minSdk = 24
-        targetSdk = 34
+        //noinspection EditedTargetSdkVersion
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -53,15 +54,15 @@ android {
 
 dependencies {
     // Firebase BoM (gerencia versões automaticamente)
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0")) // Versao de documentação do Firebase
+    // Firebase Auth (não precisa especificar versão quando usa o BoM)
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation ("com.google.firebase:firebase-auth:22.3.1")
-    implementation ("com.firebaseui:firebase-ui-auth:8.0.2")
-    implementation (platform("com.google.firebase:firebase-bom:32.7.0") )// BOM para gerenciar versões
-
-    // Jetpack Compose Core
+    implementation("com.firebaseui:firebase-ui-auth:8.0.2")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    // implementation("com.google.android.gms:play-services:12.0.1")
+    // Jetpack Compose Core'
     implementation("androidx.compose.ui:ui:1.5.4")
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.4")
     implementation("androidx.activity:activity-compose:1.7.2")
@@ -79,6 +80,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.2.2")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+    implementation(libs.firebase.auth)
 
     // Testes
     testImplementation("junit:junit:4.13.2")
