@@ -30,13 +30,12 @@ fun GeradorDeSenhas(
     navController: NavHostController,
     viewModel: HistoricoGeralViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
-    var length by remember { mutableStateOf("8") } // Valor inicial padrão
-    var lengthError by remember { mutableStateOf(false) }
-    var includeUppercase by remember { mutableStateOf(true) } // Mudei para true como padrão
+    var length by remember { mutableStateOf("") }
+    var includeUppercase by remember { mutableStateOf(false) }
     var includeLowercase by remember { mutableStateOf(true) }
-    var includeNumbers by remember { mutableStateOf(true) } // Mudei para true como padrão
+    var includeNumbers by remember { mutableStateOf(false) }
     var includeSymbols by remember { mutableStateOf(true) }
-    var generatedPassword by remember { mutableStateOf("") }
+    var generatedPassword by remember { mutableStateOf("Senha Gerada") }
     var passwordStrength by remember { mutableStateOf("Média") }
     var passwordStrengthProgress by remember { mutableFloatStateOf(0.5f) }
     var progressBarColor by remember { mutableStateOf(Color.Yellow) }
@@ -50,20 +49,14 @@ fun GeradorDeSenhas(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        // Cabeçalho
+        // Cabeçalho com seta de retorno
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Voltar",
-                    tint = Color(0xFF1D2B53)
-                )
-            }
+
             Text(
                 text = "Gerador de Senhas",
                 fontWeight = FontWeight.Bold,
@@ -73,6 +66,9 @@ fun GeradorDeSenhas(
                 textAlign = TextAlign.Center
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
 
         // Card com instruções
         Card(
@@ -100,27 +96,14 @@ fun GeradorDeSenhas(
                 )
             }
         }
-
-        // Campo de Comprimento com validação
+        // Campo de Comprimento
         OutlinedTextField(
             value = length,
             onValueChange = { newText ->
-                if (newText.all { it.isDigit() }) {
-                    length = newText
-                    lengthError = newText.toIntOrNull()?.let { it < 6 } ?: true
-                }
+                if (newText.all { it.isDigit() }) length = newText
             },
-            label = { Text("Comprimento da senha (mín: 6)") },
+            label = { Text("Comprimento da senha") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            isError = lengthError,
-            supportingText = {
-                if (lengthError) {
-                    Text(
-                        text = "Mínimo de 6 caracteres requerido",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
@@ -160,123 +143,93 @@ fun GeradorDeSenhas(
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Botão Gerar Senha
         Button(
             onClick = {
-                val tamanho = length.toIntOrNull() ?: 8
-                if (tamanho >= 6) {
-                    generatedPassword = generatePassword(
-                        tamanho,
-                        includeUppercase,
-                        includeLowercase,
-                        includeNumbers,
-                        includeSymbols
-                    )
-                    passwordStrength = calculatePasswordStrength(generatedPassword)
+                val tamInp = length.toIntOrNull() ?: 8
+                generatedPassword = generatePassword(
+                    tamInp,
+                    includeUppercase,
+                    includeLowercase,
+                    includeNumbers,
+                    includeSymbols
+                )
+                passwordStrength = calculatePasswordStrength(generatedPassword)
 
-                    // Atualiza a barra de progresso
-                    when (passwordStrength) {
-                        "Fraca" -> {
-                            passwordStrengthProgress = 0.25f
-                            progressBarColor = Color.Red
-                        }
-                        "Média" -> {
-                            passwordStrengthProgress = 0.5f
-                            progressBarColor = Color.Yellow
-                        }
-                        "Forte" -> {
-                            passwordStrengthProgress = 0.75f
-                            progressBarColor = Color(0xFFFFA500)
-                        }
-                        "Muito Forte" -> {
-                            passwordStrengthProgress = 1.0f
-                            progressBarColor = Color.Green
-                        }
+                when (passwordStrength) {
+                    "Fraca" -> {
+                        passwordStrengthProgress = 0.25f
+                        progressBarColor = Color.Red
                     }
-
-                    viewModel.adicionarItem("Senha Gerada", generatedPassword, "Força: $passwordStrength")
-                } else {
-                    lengthError = true
-                    Toast.makeText(context, "Tamanho mínimo é 6 caracteres", Toast.LENGTH_SHORT).show()
+                    "Média" -> {
+                        passwordStrengthProgress = 0.5f
+                        progressBarColor = Color.Yellow
+                    }
+                    "Forte" -> {
+                        passwordStrengthProgress = 0.75f
+                        progressBarColor = Color(0xFFFFA500) // Laranja
+                    }
+                    "Muito Forte" -> {
+                        passwordStrengthProgress = 1.0f
+                        progressBarColor = Color.Green
+                    }
                 }
+
+                // Salva no histórico
+                viewModel.adicionarItem("Senha Gerada", generatedPassword, "Força: $passwordStrength")
             },
-            enabled = !lengthError && length.isNotEmpty(),
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53)),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
+                .height(60.dp)
         ) {
             Text("Gerar Senha", color = Color.White, fontSize = 18.sp)
         }
 
-        if (generatedPassword.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Card com a senha gerada
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "Senha Gerada:",
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1D2B53)
-                    )
-                    Text(
-                        text = generatedPassword,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        color = Color(0xFF1D2B53)
-                    )
-                    Button(
-                        onClick = {
-                            val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                            val clipData = ClipData.newPlainText("Generated Password", generatedPassword)
-                            clipboardManager.setPrimaryClip(clipData)
-                            Toast.makeText(context, "Senha copiada!", Toast.LENGTH_SHORT).show()
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Copiar Senha", color = Color.White)
-                    }
-                }
-            }
+        // Campo com a Senha Gerada
+        OutlinedTextField(
+            value = generatedPassword,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Senha Gerada") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        // Botão Copiar Senha
+        Button(
+            onClick = {
+                val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clipData = ClipData.newPlainText("Generated Password", generatedPassword)
+                clipboardManager.setPrimaryClip(clipData)
+                Toast.makeText(context, "Senha copiada!", Toast.LENGTH_SHORT).show()
+            },
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2B53)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Text("Copiar", color = Color.White)
+        }
 
-            // Card com a força da senha
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "Força da Senha: $passwordStrength",
-                        color = Color(0xFF1D2B53),
-                        fontWeight = FontWeight.Bold
-                    )
-                    LinearProgressIndicator(
-                        progress = passwordStrengthProgress,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .padding(top = 8.dp),
-                        color = progressBarColor
-                    )
-                }
-            }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Barra de Progresso da Força da Senha
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Força da Senha: $passwordStrength", color = Color(0xFF123456))
+            Spacer(modifier = Modifier.width(8.dp))
+            LinearProgressIndicator(
+                progress = passwordStrengthProgress,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp),
+                color = progressBarColor
+            )
         }
     }
 }

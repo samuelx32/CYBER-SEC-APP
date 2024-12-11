@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,8 +35,6 @@ fun VerificacaoUrlScreen(
     var showSnackbar by remember { mutableStateOf(false) }
     var mensagemErro by remember { mutableStateOf("") }
 
-
-
     val estadoAnalise by virusTotalViewModel.estadoAnalise.collectAsState()
 
     // Monitora mudanças no estado da análise
@@ -58,7 +58,7 @@ fun VerificacaoUrlScreen(
                 showSnackbar = true
                 mensagemErro = (estadoAnalise as EstadoAnaliseUrl.Erro).mensagem
             }
-            else -> {} // Estados inicial e carregando são tratados na UI
+            else -> {}
         }
     }
 

@@ -82,6 +82,7 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation(libs.firebase.auth)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.firebase.crashlytics.buildtools)
 
     // Testes
     testImplementation("junit:junit:4.13.2")

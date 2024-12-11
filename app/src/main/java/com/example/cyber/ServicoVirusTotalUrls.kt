@@ -22,7 +22,17 @@ class ServicoVirusTotal {
         .build()
 
     private val baseUrl = "https://www.virustotal.com/api/v3"
-    private val apiKey = "0650f0c6354e1bb93cfb5764762a24a6005e52bdff5f7fe25bb8e09fdb398ca0" // Substitua pela sua chave API do VirusTotal
+    private val apiKey = "0650f0c6354e1bb93cfb5764762a24a6005e52bdff5f7fe25bb8e09fdb398ca0"
+
+    data class ResultadoDetalhado(
+        val urlEhSegura: Boolean,
+        val estatisticasAnalise: Map<String, Int>,
+        val estatisticasReport: Map<String, Int>,
+        val ultimaAnalise: String,
+        val reputacao: Int,
+        val totalVotos: Map<String, Int>
+    )
+
 
     sealed class ResultadoAnalise {
         data class Sucesso(val estatisticas: Map<String, Int>, val urlEhSegura: Boolean) : ResultadoAnalise()
@@ -32,11 +42,10 @@ class ServicoVirusTotal {
     suspend fun analisarURL(url: String): ResultadoAnalise = withContext(Dispatchers.IO) {
         Log.d(TAG, "Iniciando análise da URL: $url")
         try {
-            if (apiKey == "SUA_CHAVE_API_AQUI") {
+            if (apiKey == "") {
                 Log.e(TAG, "Chave API não configurada")
                 return@withContext ResultadoAnalise.Erro("Chave API do VirusTotal não configurada")
             }
-
             // Primeira requisição para enviar URL para análise
             Log.d(TAG, "Enviando URL para análise")
             val respostaAnalise = enviarUrlParaAnalise(url)

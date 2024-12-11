@@ -1,4 +1,3 @@
-// 1. Primeiro os imports
 package com.example.cyber
 
 import android.os.Bundle
