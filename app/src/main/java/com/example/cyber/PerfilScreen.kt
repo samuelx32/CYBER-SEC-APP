@@ -21,7 +21,8 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun PerfilScreen(navController: NavHostController) {
-    val user = FirebaseAuth.getInstance().currentUser
+    // Verifica se o usuário está logado
+    val user = FirebaseAuth.getInstance().currentUser // Metodo de autenticação do firebase
     Column(
         modifier = Modifier
             .fillMaxSize()

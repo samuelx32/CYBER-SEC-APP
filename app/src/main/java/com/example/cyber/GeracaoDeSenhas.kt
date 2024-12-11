@@ -264,7 +264,7 @@ fun generatePassword(
     if (allowedChars.isEmpty()) allowedChars = lowercaseChars
 
     return (1..length)
-        .map { allowedChars.random() }
+        .map { allowedChars.random() }  // Elemento de imbrevisibilidade
         .joinToString("")
 }
 

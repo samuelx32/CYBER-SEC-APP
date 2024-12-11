@@ -147,24 +147,122 @@ fun ChatBubble(text: String, isBot: Boolean, index: Int, visible: Boolean) {
 }
 
 
-// Função para gerar respostas automáticas baseadas em palavras-chave
 fun generateBotResponse(input: String): String {
     val lowerCaseInput = input.lowercase()
 
     return when {
-        lowerCaseInput.contains("senha") -> "Recomendo usar uma senha com pelo menos 12 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais."
-        lowerCaseInput.contains("phishing") -> "Cuidado com e-mails ou mensagens que pedem informações pessoais. Sempre verifique o remetente e nunca clique em links desconhecidos."
-        lowerCaseInput.contains("antivírus") -> "Manter um antivírus atualizado ajuda a proteger seu dispositivo contra malwares."
-        lowerCaseInput.contains("site seguro") -> "Certifique-se de que o site começa com 'https' e tem um cadeado na barra de endereço antes de inserir dados pessoais."
-        lowerCaseInput.contains("vpn") -> "Usar uma VPN é uma ótima forma de proteger sua privacidade ao navegar na internet em redes públicas."
-        lowerCaseInput.contains("dicas") -> "Algumas dicas de segurança: evite clicar em links suspeitos, mantenha seus dispositivos atualizados e use autenticação de dois fatores sempre que possível."
-        lowerCaseInput.contains("ransomware") -> "Ransomware é um tipo de malware que criptografa seus arquivos e exige um pagamento. Evite baixar arquivos suspeitos e faça backups regularmente."
-        lowerCaseInput.contains("backup") -> "Fazer backups regularmente é essencial para proteger seus dados em caso de perda ou ataque cibernético."
-        lowerCaseInput.contains("2fa") || lowerCaseInput.contains("autenticação") -> "Autenticação de dois fatores adiciona uma camada extra de segurança às suas contas. Ative essa opção sempre que disponível."
-        lowerCaseInput.contains("golpe financeiro") -> "Fique atento a mensagens que oferecem ganhos financeiros fáceis ou pedem transferências urgentes. Confirme sempre a veracidade da solicitação."
-        lowerCaseInput.contains("wifi público") -> "Evite acessar informações sensíveis em redes Wi-Fi públicas. Sempre que possível, use uma VPN para proteger sua conexão."
-        lowerCaseInput.contains("engenharia social") -> "Engenharia social é uma técnica usada por golpistas para manipular pessoas. Desconfie de solicitações inesperadas de informações pessoais."
-        else -> "Desculpe, não entendi. Poderia reformular a pergunta ou fornecer mais detalhes?"
+        // Senhas e Autenticação
+        lowerCaseInput.contains("senha") -> """
+            Para criar uma senha forte, siga estas recomendações:
+            - Use pelo menos 12 caracteres
+            - Combine letras maiúsculas, minúsculas, números e símbolos
+            - Evite informações pessoais como datas ou nomes
+            - Use senhas diferentes para cada conta
+            - Considere usar um gerenciador de senhas confiável
+        """.trimIndent()
+
+        // Phishing e Engenharia Social
+        lowerCaseInput.contains("phishing") || lowerCaseInput.contains("golpe") -> """
+            Fique atento aos sinais de phishing:
+            - E-mails urgentes pedindo ação imediata
+            - Erros de português ou formatação estranha
+            - Remetentes desconhecidos ou que imitam empresas
+            - Links suspeitos ou diferentes do oficial
+            - Solicitações de dados pessoais ou bancários
+            Sempre verifique a autenticidade antes de clicar em links.
+        """.trimIndent()
+
+        // Proteção contra Malware
+        lowerCaseInput.contains("antivírus") || lowerCaseInput.contains("malware") -> """
+            Para proteção efetiva contra malware:
+            1. Mantenha seu antivírus sempre atualizado
+            2. Faça varreduras regulares no sistema
+            3. Evite downloads de fontes não confiáveis
+            4. Mantenha seu sistema operacional atualizado
+            5. Ative o firewall do sistema
+        """.trimIndent()
+
+        // Segurança em Sites
+        lowerCaseInput.contains("site") || lowerCaseInput.contains("navegação") -> """
+            Para navegar com segurança:
+            - Verifique se o site usa HTTPS (cadeado verde)
+            - Confira se a URL está correta
+            - Evite fazer compras em sites desconhecidos
+            - Não salve dados de cartão em navegadores
+            - Use conexões seguras (evite Wi-Fi público)
+        """.trimIndent()
+
+        // VPN e Privacidade
+        lowerCaseInput.contains("vpn") || lowerCaseInput.contains("privacidade") -> """
+            Benefícios de usar uma VPN:
+            - Protege seus dados em redes públicas
+            - Mascara seu endereço IP
+            - Evita rastreamento online
+            - Permite acesso seguro a conteúdo restrito
+            - Protege durante transações online
+        """.trimIndent()
+
+        // Ransomware e Backups
+        lowerCaseInput.contains("ransomware") || lowerCaseInput.contains("backup") -> """
+            Proteção contra ransomware:
+            - Faça backups regulares em local seguro
+            - Não abra anexos suspeitos
+            - Mantenha software atualizado
+            - Use soluções anti-ransomware
+            Em caso de ataque, não pague o resgate e procure ajuda profissional.
+        """.trimIndent()
+
+        // Autenticação de Dois Fatores
+        lowerCaseInput.contains("2fa") || lowerCaseInput.contains("autenticação") -> """
+            Sobre autenticação de dois fatores (2FA):
+            - Ative em todas as contas importantes
+            - Use apps autenticadores em vez de SMS
+            - Guarde os códigos de backup
+            - Não compartilhe códigos com ninguém
+            - Mantenha seu celular protegido
+        """.trimIndent()
+
+        // Golpes Financeiros
+        lowerCaseInput.contains("golpe financeiro") || lowerCaseInput.contains("banco") -> """
+            Prevenção contra golpes financeiros:
+            - Desconfie de ofertas muito vantajosas
+            - Não clique em links de SMS ou WhatsApp
+            - Verifique sempre a fonte da mensagem
+            - Use apenas apps oficiais dos bancos
+            - Nunca compartilhe senhas ou códigos
+        """.trimIndent()
+
+        // Wi-Fi Público
+        lowerCaseInput.contains("wifi") || lowerCaseInput.contains("rede") -> """
+            Cuidados com Wi-Fi público:
+            - Evite acessar bancos ou fazer compras
+            - Use sempre uma VPN confiável
+            - Desative compartilhamento de arquivos
+            - Verifique se está na rede correta
+            - Mantenha seu dispositivo atualizado
+        """.trimIndent()
+
+        // Engenharia Social
+        lowerCaseInput.contains("engenharia social") -> """
+            Proteção contra engenharia social:
+            - Verifique a identidade de quem pede informações
+            - Não forneça dados pessoais por telefone
+            - Desconfie de pressão psicológica
+            - Confirme solicitações por canais oficiais
+            - Treine sua equipe para reconhecer ataques
+        """.trimIndent()
+
+        // Resposta padrão para perguntas não reconhecidas
+        else -> """
+            Não encontrei uma resposta específica para sua pergunta. 
+            Posso ajudar com:
+            - Senhas e autenticação
+            - Proteção contra golpes
+            - Segurança em dispositivos
+            - Navegação segura
+            - Privacidade online
+            Como posso auxiliar?
+        """.trimIndent()
     }
 }
 

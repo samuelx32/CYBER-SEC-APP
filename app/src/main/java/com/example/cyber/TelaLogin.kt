@@ -37,7 +37,7 @@ fun LoginScreen(navController: NavHostController) {
 
     // Configuração do Google Sign-In
     val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken(context.getString(R.string.default_web_client_id)) // Certifique-se de que este ID está correto
+        .requestIdToken(context.getString(R.string.default_web_client_id))
         .requestEmail()
         .build()
     val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
@@ -51,10 +51,10 @@ fun LoginScreen(navController: NavHostController) {
             val account = task.getResult(ApiException::class.java)
             Log.d("GoogleSignIn", "Google Sign-In bem-sucedido: ${account.email}")
 
-            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+            val credential = GoogleAuthProvider.getCredential(account.idToken, null) // Credencial de autenticação
             auth.signInWithCredential(credential)
                 .addOnCompleteListener { firebaseTask ->
-                    if (firebaseTask.isSuccessful) {
+                    if (firebaseTask.isSuccessful) { // Login bem sucedido no Firebase
                         Log.d("GoogleSignIn", "Autenticação no Firebase bem-sucedida")
                         Toast.makeText(context, "Login com Google bem-sucedido!", Toast.LENGTH_SHORT).show()
                         navController.navigate("home")
