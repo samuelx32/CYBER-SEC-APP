@@ -47,7 +47,7 @@ fun TelaInicial(navigateTo: (String) -> Unit) {
                         fontSize = 22.sp
                     ),
                     color = Color(0xFF123456),
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
                 )
 
                 Spacer(modifier = Modifier.height(30.dp))
