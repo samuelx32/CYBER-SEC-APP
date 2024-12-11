@@ -1,6 +1,6 @@
 package com.example.cyber
 
-import androidx.compose.foundation.Image
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,36 +19,57 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-
-
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun VerificacaoUrlScreen(
+
     navController: NavHostController,
     navigateTo: (String) -> Unit,
-    viewModel: HistoricoGeralViewModel // ViewModel compartilhado
+    historicoViewModel: HistoricoGeralViewModel,
+    virusTotalViewModel: ViewModelVirusTotal = viewModel()
 ) {
     var url by remember { mutableStateOf("") }
     var showSnackbar by remember { mutableStateOf(false) }
+    var mensagemErro by remember { mutableStateOf("") }
 
-    // Função para verificar a URL e salvar no histórico
+
+
+    val estadoAnalise by virusTotalViewModel.estadoAnalise.collectAsState()
+
+    // Monitora mudanças no estado da análise
+    LaunchedEffect(estadoAnalise) {
+        when (estadoAnalise) {
+            is EstadoAnaliseUrl.Sucesso -> {
+                val resultado = estadoAnalise as EstadoAnaliseUrl.Sucesso
+                val status = if (resultado.urlEhSegura) "Seguro" else "Malicioso"
+
+                // Adiciona ao histórico
+                historicoViewModel.adicionarItem("URL", url, status)
+
+                // Navega para a tela correspondente
+                if (resultado.urlEhSegura) {
+                    navigateTo("resultadoSeguro")
+                } else {
+                    navigateTo("alertUrl")
+                }
+            }
+            is EstadoAnaliseUrl.Erro -> {
+                showSnackbar = true
+                mensagemErro = (estadoAnalise as EstadoAnaliseUrl.Erro).mensagem
+            }
+            else -> {} // Estados inicial e carregando são tratados na UI
+        }
+    }
+
+    // Função para verificar a URL
     fun verificarCampos() {
         if (url.isBlank()) {
             showSnackbar = true
+            mensagemErro = "Por favor, insira uma URL válida."
         } else {
             showSnackbar = false
-            val seguro = verificarUrl(url)
-            val status = if (seguro) "Seguro" else "Maligno"
-
-            // Adiciona ao histórico
-            viewModel.adicionarItem("URL", url, status)
-
-            // Navega para a tela correspondente
-            if (seguro) {
-                navigateTo("resultadoSeguro")
-            } else {
-                navigateTo("alertUrl")
-            }
+            virusTotalViewModel.analisarUrl(url)
         }
     }
 
@@ -102,7 +123,7 @@ fun VerificacaoUrlScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Insira a URL para análise de segurança.",
+                        text = "Insira a URL para análise de segurança via VirusTotal.",
                         fontSize = 16.sp,
                         color = Color.White,
                         textAlign = TextAlign.Center
@@ -140,29 +161,29 @@ fun VerificacaoUrlScreen(
             elevation = ButtonDefaults.elevatedButtonElevation(4.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Verificar URL", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            if (estadoAnalise is EstadoAnaliseUrl.Carregando) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = Color.White
+                )
+            } else {
+                Text("Verificar URL", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
         }
 
-        // Snackbar para validação
+        // Snackbar para validação e erros
         if (showSnackbar) {
             Snackbar(
                 modifier = Modifier.padding(16.dp),
                 containerColor = Color(0xFFD4D8E2),
                 contentColor = Color.Red
             ) {
-                Text("Por favor, insira uma URL válida.", textAlign = TextAlign.Center)
+                Text(mensagemErro, textAlign = TextAlign.Center)
             }
         }
     }
 }
 
-// Função de verificação de URL (simulação)
-fun verificarUrl(url: String): Boolean {
-    val palavrasMaliciosas = listOf("malware", "phishing", "suspeito", "virus", "fake")
-    return !palavrasMaliciosas.any { url.contains(it, ignoreCase = true) }
-}
-
-// Tela de alerta para URL suspeita
 @Composable
 fun AlertaUrlScreen(navigateTo: (String) -> Unit) {
     Column(
@@ -172,11 +193,23 @@ fun AlertaUrlScreen(navigateTo: (String) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("ALERT!", color = Color.Red, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+        Text("ALERTA!", color = Color.Red, fontSize = 32.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
-        Text("A URL que você tentou acessar foi identificada como maliciosa!", color = Color.White, fontSize = 20.sp)
+        Text(
+            "A URL foi identificada como maliciosa pelo VirusTotal!",
+            color = Color.White,
+            fontSize = 20.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        Text("Recomenda-se evitar o acesso a esta URL.", color = Color.White, fontSize = 16.sp)
+        Text(
+            "Recomenda-se fortemente evitar o acesso a esta URL.",
+            color = Color.White,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
         Button(
@@ -184,8 +217,7 @@ fun AlertaUrlScreen(navigateTo: (String) -> Unit) {
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.White)
         ) {
-            Text("Voltar", color = Color.Black)
+            Text("Voltar para Home", color = Color.Black)
         }
     }
 }
-

@@ -81,6 +81,7 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation(libs.firebase.auth)
+    implementation(libs.androidx.core.splashscreen)
 
     // Testes
     testImplementation("junit:junit:4.13.2")
@@ -92,5 +93,9 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling:1.5.4")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.4")
 
+    // OkHttp para requisições HTTP
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+//    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation(libs.gson)
 
 }
