@@ -1,3 +1,4 @@
+// 1. Primeiro os imports
 package com.example.cyber
 
 import android.os.Bundle
@@ -8,134 +9,209 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import coil.compose.AsyncImage
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.isSystemInDarkTheme
-
-
-
-import androidx.compose.ui.draw.clip
-
 import android.app.Activity
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Email
-
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.InsertDriveFile
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Settings
-
-
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.vector.ImageVector
-
-
+// 2. Definição da MainActivity
 class MainActivity : ComponentActivity() {
+    private val TAG = "MainActivity"
+
     private val signInLauncher = registerForActivityResult(
         FirebaseAuthUIActivityResultContract()
     ) { res -> onSignInResult(res) }
 
-    // Navegação entre telas (Definição do navController)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var isDarkTheme by remember { mutableStateOf(false) } // Controle de tema dinâmico
-            val navController = rememberNavController() // Controlador de navegação
+            val systemInDarkTheme = isSystemInDarkTheme()
+            var isDarkTheme by remember {
+                mutableStateOf(systemInDarkTheme)
+            }
+            var isLoading by remember { mutableStateOf(false) }
+            val navController = rememberNavController()
 
-            CyberTheme(darkTheme = isDarkTheme) { // Tema aplicado globalmente
-                AppWithDrawer(
-                    navController = navController,
-                    darkThemeEnabled = isDarkTheme,
-                    onThemeChange = { isDarkTheme = it } // Controle de alternância de tema
-                )
+            CyberTheme(darkTheme = isDarkTheme) {
+                LoadingOverlay(isLoading = isLoading) {
+                    AppWithDrawer(
+                        navController = navController,
+                        darkThemeEnabled = isDarkTheme,
+                        onThemeChange = { newTheme ->
+                            isDarkTheme = newTheme
+                        }
+                    )
+                }
             }
         }
     }
 
+    // Funções de autenticação
     private fun startSignIn() {
-        val providers = arrayListOf(AuthUI.IdpConfig.GoogleBuilder().build())
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.GoogleBuilder().build(),
+            AuthUI.IdpConfig.EmailBuilder().build()
+        )
+
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()
             .setAvailableProviders(providers)
+            .setLogo(R.drawable.ic_profile)
+            .setTheme(R.style.Theme_Cyber)
             .build()
+
         signInLauncher.launch(signInIntent)
     }
 
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
-        val context = this
-        if (result.resultCode == Activity.RESULT_OK) {
-            val user = FirebaseAuth.getInstance().currentUser
-            Toast.makeText(
-                context,
-                "Bem-vindo, ${user?.displayName ?: "Usuário"}!",
-                Toast.LENGTH_SHORT
-            ).show()
-        } else {
-            Toast.makeText(
-                context,
-                "Erro no login com Google",
-                Toast.LENGTH_SHORT
-            ).show()
+        when (result.resultCode) {
+            Activity.RESULT_OK -> {
+                FirebaseAuth.getInstance().currentUser?.let { user ->
+                    showWelcomeMessage(user.displayName)
+                }
+            }
+            else -> showLoginError()
+        }
+    }
+
+    private fun showWelcomeMessage(userName: String?) {
+        Toast.makeText(
+            this,
+            "Bem-vindo, ${userName ?: "Usuário"}!",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun showLoginError() {
+        Toast.makeText(
+            this,
+            "Erro no login. Tente novamente.",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+}
+
+// 3. Componentes de UI
+@Composable
+fun LoadingOverlay(
+    isLoading: Boolean,
+    content: @Composable () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        content()
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(48.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
 
+// 4. Definições de tema
+private val AppTypography = Typography(
+    titleLarge = TextStyle(
+        fontSize = 24.sp,
+        fontWeight = FontWeight.Bold,
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp
+    ),
+    titleMedium = TextStyle(
+        fontSize = 20.sp,
+        fontWeight = FontWeight.SemiBold,
+        lineHeight = 24.sp,
+        letterSpacing = 0.15.sp
+    ),
+    bodyLarge = TextStyle(
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Normal,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+    bodyMedium = TextStyle(
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Normal,
+        lineHeight = 20.sp,
+        letterSpacing = 0.25.sp
+    )
+)
+
+private val LightColorScheme = lightColorScheme(
+    primary = Color(0xFF061233),
+    onPrimary = Color.White,
+    secondary = Color(0xFF1D2B53),
+    onSecondary = Color.White,
+    background = Color(0xFFCBD6E2),
+    surface = Color.White,
+    onSurface = Color.Black,
+    tertiary = Color(0xFF3949AB),
+    onTertiary = Color.White,
+    surfaceVariant = Color(0xFFF5F5F5),
+    onSurfaceVariant = Color(0xFF1D1D1D)
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = Color(0xFF1D1E33),
+    onPrimary = Color.White,
+    secondary = Color(0xFF2A2B4F),
+    onSecondary = Color.White,
+    background = Color(0xFF121212),
+    surface = Color(0xFF1E1E1E),
+    onSurface = Color.White,
+    tertiary = Color(0xFF3949AB),
+    onTertiary = Color.White,
+    surfaceVariant = Color(0xFF2D2D2D),
+    onSurfaceVariant = Color.White
+)
+
 @Composable
 fun CyberTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(), // Alterna automaticamente com base no sistema
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) {
-        darkColorScheme(
-            primary = Color(0xFF1D1E33),
-            onPrimary = Color.White,
-            secondary = Color(0xFF2A2B4F),
-            onSecondary = Color.White,
-            background = Color(0xFF121212),
-            surface = Color(0xFF1E1E1E),
-            onSurface = Color.White
-        )
-    } else {
-        lightColorScheme(
-            primary = Color(0xFF061233),
-            onPrimary = Color.White,
-            secondary = Color(0xFF1D2B53),
-            onSecondary = Color.White,
-            background = Color(0xFFCBD6E2),
-            surface = Color.White,
-            onSurface = Color.Black
-        )
+    val colorScheme = when {
+        darkTheme -> DarkColorScheme
+        else -> LightColorScheme
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography(),
+        typography = AppTypography,
         content = content
     )
 }
 
+// 5. Componentes de Navegação
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppWithDrawer(
@@ -159,148 +235,30 @@ fun AppWithDrawer(
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("") },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(
-                                Icons.Default.Menu,
-                                contentDescription = "Abrir Menu",
-                                modifier = Modifier.size(30.dp)
-                            )
+                AppTopBar(
+                    onMenuClick = { scope.launch { drawerState.open() } },
+                    onProfileClick = {
+                        val route = if (FirebaseAuth.getInstance().currentUser != null) {
+                            "perfil"
+                        } else {
+                            "login"
                         }
-                    },
-                    actions = {
-                        IconButton(onClick = {
-                            val user = FirebaseAuth.getInstance().currentUser // Verifica se o usuário está logado
-                            if (user != null) {
-                                navController.navigate("perfil") // Redireciona para a tela de perfil
-                            } else {
-                                navController.navigate("login") // Redireciona para a tela de login
-                            }
-                        }) {
-                            val user = FirebaseAuth.getInstance().currentUser
-                            val photoUrl = user?.photoUrl?.toString()
-
-                            if (photoUrl != null) {
-                                AsyncImage(
-                                    model = photoUrl,
-                                    contentDescription = "Perfil do Usuário",
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.Gray, CircleShape)
-                                )
-                            } else {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_profile),
-                                    contentDescription = "Perfil",
-                                    tint = Color.Black,
-                                    modifier = Modifier.size(30.dp)
-                                )
-                            }
-                        }
-
-                    },
-                    colors = TopAppBarDefaults.mediumTopAppBarColors(
-                        containerColor = Color(0xFFCBD6E2), // Alterar a cor da top bar
-                        titleContentColor = MaterialTheme.colorScheme.primary // Cor do texto
-                    )
-                )
-            },
-            content = { paddingValues ->
-                AppNavHost(
-                    navController = navController,
-                    modifier = Modifier.padding(paddingValues),
-                    darkThemeEnabled = darkThemeEnabled,
-                    onThemeChange = onThemeChange
+                        navController.navigate(route)
+                    }
                 )
             }
-        )
-    }
-}
-
-
-
-
-
-
-
-
-@Composable
-fun AppNavHost(
-    navController: NavHostController,
-    modifier: Modifier = Modifier,
-    darkThemeEnabled: Boolean,
-    onThemeChange: (Boolean) -> Unit
-) {
-    // Inicialize o ViewModel compartilhado
-    val historicoViewModel: HistoricoGeralViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
-
-    NavHost(
-        navController = navController,
-        startDestination = "home",
-        modifier = modifier
-    ) {
-        composable("home") {
-            TelaInicial(navigateTo = { navController.navigate(it) })
-        }
-
-        composable("gerarSenha") {
-            GeradorDeSenhas(navController, historicoViewModel)
-        }
-
-        composable("VerificacaoTela") {
-            VerificacaoTela(navController = navController, navigateTo = { route -> navController.navigate(route) })
-        }
-
-        composable("verificacaoEmail") {
-            VerificacaoEmailScreen(navController, { navController.navigate(it) }, historicoViewModel)
-        }
-
-        composable("verificacaoUrl") {
-            VerificacaoUrlScreen(navController, { navController.navigate(it) }, historicoViewModel)
-        }
-
-        composable("VerificacaoArquivos") {
-            VerificacaoArquivoScreen(navController, { navController.navigate(it) }, historicoViewModel)
-        }
-
-        composable("chatSuporte") {
-            ChatBotScreen(navController, { navController.navigate(it) })
-        }
-
-        composable("resultadoSeguro") {
-            ResultadoSeguroScreen { navController.navigate(it) }
-        }
-
-        composable("resultadoAlerta") {
-            ResultadoAlertaScreen { navController.navigate(it) }
-        }
-
-        composable("login") {
-            LoginScreen(navController = navController)
-        }
-
-        composable("configuracoes") {
-            ConfiguracoesScreen(navController = navController)
-        }
-
-        composable(route = "historico") {
-            HistoricoScreen(historicoViewModel)
-        }
-
-        composable("telaCadastro") {
-            TelaCadastro(navController = navController)
-        }
-
-        composable("perfil") {
-            PerfilScreen(navController = navController)
+        ) { paddingValues ->
+            AppNavHost(
+                navController = navController,
+                modifier = Modifier.padding(paddingValues),
+                darkThemeEnabled = darkThemeEnabled,
+                onThemeChange = onThemeChange
+            )
         }
     }
 }
 
-
+// 6. Componentes do Drawer
 @Composable
 fun DrawerContent(
     navController: NavHostController,
@@ -312,13 +270,12 @@ fun DrawerContent(
         modifier = Modifier
             .fillMaxHeight()
             .width(160.dp)
-            .background(Color(0xFFCBD6E2))
-            .statusBarsPadding() // Adiciona padding para a status bar
-            .navigationBarsPadding() // Adiciona padding para a navigation bar
+            .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .padding(vertical = 8.dp),
         verticalArrangement = Arrangement.Top
     ) {
-        // Cabeçalho com margem superior
         Text(
             text = "Ferramentas",
             style = MaterialTheme.typography.titleMedium,
@@ -326,12 +283,11 @@ fun DrawerContent(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-        // Container para os itens de navegação
         Column(
             modifier = Modifier
-                .weight(1f) // Ocupa o espaço disponível
+                .weight(1f)
                 .padding(vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp) // Reduz o espaçamento entre itens
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             NavigationRow("Início", Icons.Default.Home, "home", navController, onClose)
             NavigationRow("Senhas", Icons.Default.Lock, "gerarSenha", navController, onClose)
@@ -342,11 +298,11 @@ fun DrawerContent(
             NavigationRow("Histórico", Icons.Default.History, "historico", navController, onClose)
         }
 
-        // Configurações sempre na parte inferior
         NavigationRow("Config", Icons.Default.Settings, "configuracoes", navController, onClose)
     }
 }
 
+// 7. Componentes de Navegação
 @Composable
 private fun NavigationRow(
     text: String,
@@ -358,7 +314,7 @@ private fun NavigationRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(40.dp) // Altura fixa para cada item
+            .height(40.dp)
             .clickable {
                 navController.navigate(route)
                 onClose()
@@ -371,7 +327,7 @@ private fun NavigationRow(
             imageVector = icon,
             contentDescription = text,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp) // Ícone um pouco menor
+            modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
@@ -382,29 +338,117 @@ private fun NavigationRow(
     }
 }
 
-
+// 8. TopBar
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NavigationItem(
-    title: String,
-    route: String,
-    icon: ImageVector,
-    navController: NavHostController,
-    onClose: () -> Unit
+fun AppTopBar(
+    onMenuClick: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
-    TextButton(
-        onClick = {
-            navController.navigate(route)
-            onClose()
+    TopAppBar(
+        title = { Text("") },
+        navigationIcon = {
+            IconButton(
+                onClick = onMenuClick,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Icon(
+                    Icons.Default.Menu,
+                    contentDescription = "Abrir Menu",
+                    modifier = Modifier.size(30.dp)
+                )
+            }
         },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary
+        actions = {
+            IconButton(
+                onClick = onProfileClick,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                val user = FirebaseAuth.getInstance().currentUser
+                val photoUrl = user?.photoUrl?.toString()
+
+                if (photoUrl != null) {
+                    AsyncImage(
+                        model = photoUrl,
+                        contentDescription = "Perfil do Usuário",
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_profile),
+                        contentDescription = "Perfil",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+            }
+        },
+        colors = TopAppBarDefaults.mediumTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
         )
-    }
+    )
 }
 
+// 9. NavHost
+@Composable
+fun AppNavHost(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    darkThemeEnabled: Boolean,
+    onThemeChange: (Boolean) -> Unit
+) {
+    val historicoViewModel: HistoricoGeralViewModel = viewModel()
+
+    NavHost(
+        navController = navController,
+        startDestination = "home",
+        modifier = modifier
+    ) {
+        composable("home") {
+            TelaInicial(navigateTo = { navController.navigate(it) })
+        }
+        composable("gerarSenha") {
+            GeradorDeSenhas(navController, historicoViewModel)
+        }
+        composable("VerificacaoTela") {
+            VerificacaoTela(navController = navController, navigateTo = { route -> navController.navigate(route) })
+        }
+        composable("verificacaoEmail") {
+            VerificacaoEmailScreen(navController, { navController.navigate(it) }, historicoViewModel)
+        }
+        composable("verificacaoUrl") {
+            VerificacaoUrlScreen(navController, { navController.navigate(it) }, historicoViewModel)
+        }
+        composable("VerificacaoArquivos") {
+            VerificacaoArquivoScreen(navController, { navController.navigate(it) }, historicoViewModel)
+        }
+        composable("chatSuporte") {
+            ChatBotScreen(navController, { navController.navigate(it) })
+        }
+        composable("resultadoSeguro") {
+            ResultadoSeguroScreen { navController.navigate(it) }
+        }
+        composable("resultadoAlerta") {
+            ResultadoAlertaScreen { navController.navigate(it) }
+        }
+        composable("login") {
+            LoginScreen(navController = navController)
+        }
+        composable("configuracoes") {
+            ConfiguracoesScreen(navController = navController)
+        }
+        composable("historico") {
+            HistoricoScreen(historicoViewModel)
+        }
+        composable("telaCadastro") {
+            TelaCadastro(navController = navController)
+        }
+        composable("perfil") {
+            PerfilScreen(navController = navController)
+        }
+    }
+}
